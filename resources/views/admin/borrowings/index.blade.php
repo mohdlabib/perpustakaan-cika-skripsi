@@ -3,42 +3,58 @@
 @section('page-title', 'Peminjaman')
 
 @section('content')
-<!-- Info Panel Widget -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="text-3xl font-bold">{{ \App\Models\Borrowing::count() }}</div>
-                <div class="text-blue-100 text-sm mt-1">Total Peminjaman</div>
+<!-- Stats Cards - Same style as Dashboard -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
             </div>
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">📋</div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Borrowing::count() }}</div>
+                <div class="text-gray-500 text-sm">Total Peminjaman</div>
+            </div>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="text-3xl font-bold">{{ \App\Models\Borrowing::active()->count() }}</div>
-                <div class="text-green-100 text-sm mt-1">Sedang Dipinjam</div>
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                </svg>
             </div>
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">📖</div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Borrowing::active()->count() }}</div>
+                <div class="text-gray-500 text-sm">Sedang Dipinjam</div>
+            </div>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="text-3xl font-bold">{{ \App\Models\Borrowing::overdue()->count() }}</div>
-                <div class="text-red-100 text-sm mt-1">Terlambat</div>
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm {{ \App\Models\Borrowing::overdue()->count() > 0 ? 'border-red-200 bg-red-50' : '' }}">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 {{ \App\Models\Borrowing::overdue()->count() > 0 ? 'bg-red-100' : 'bg-orange-100' }} rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 {{ \App\Models\Borrowing::overdue()->count() > 0 ? 'text-red-600' : 'text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
             </div>
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">⚠️</div>
+            <div>
+                <div class="text-2xl font-bold {{ \App\Models\Borrowing::overdue()->count() > 0 ? 'text-red-600' : 'text-gray-800' }}">{{ \App\Models\Borrowing::overdue()->count() }}</div>
+                <div class="text-gray-500 text-sm">Terlambat</div>
+            </div>
         </div>
     </div>
-    <div class="bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl p-5 text-white">
-        <div class="flex items-center justify-between">
-            <div>
-                <div class="text-3xl font-bold">{{ \App\Models\Borrowing::returned()->count() }}</div>
-                <div class="text-gray-100 text-sm mt-1">Dikembalikan</div>
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
             </div>
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">✅</div>
+            <div>
+                <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Borrowing::returned()->count() }}</div>
+                <div class="text-gray-500 text-sm">Dikembalikan</div>
+            </div>
         </div>
     </div>
 </div>
@@ -49,8 +65,11 @@
         <h2 class="text-lg font-semibold text-gray-800">Manajemen Peminjaman</h2>
         <p class="text-gray-500 text-sm">Kelola peminjaman dan pengembalian buku</p>
     </div>
-    <a href="{{ route('admin.borrowings.create') }}" class="px-4 py-2.5 bg-gradient-to-r from-primary-dark to-green-700 text-white rounded-xl font-medium hover:shadow-lg transition flex items-center gap-2">
-        ➕ Catat Peminjaman
+    <a href="{{ route('admin.borrowings.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Catat Peminjaman
     </a>
 </div>
 
@@ -58,17 +77,21 @@
 <div class="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
     <form action="{{ route('admin.borrowings.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4">
         <div class="flex-1 relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
             <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama siswa atau judul buku..." 
                 class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark">
         </div>
         <select name="status" class="px-4 py-3 border border-gray-200 rounded-xl">
-            <option value="">📊 Semua Status</option>
-            <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>📖 Dipinjam</option>
-            <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>✅ Dikembalikan</option>
-            <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>⚠️ Terlambat</option>
+            <option value="">Semua Status</option>
+            <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
+            <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
+            <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Terlambat</option>
         </select>
-        <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition">Filter</button>
+        <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition">
+            Filter
+        </button>
     </form>
 </div>
 
@@ -105,29 +128,32 @@
                         <p class="text-gray-400 text-sm">{{ $borrowing->book->author ?? '' }}</p>
                     </td>
                     <td class="px-6 py-4 text-gray-600">
-                        <div class="flex items-center gap-2">
-                            <span>📅</span>
-                            {{ $borrowing->borrow_date->format('d M Y') }}
-                        </div>
+                        {{ $borrowing->borrow_date->format('d M Y') }}
                     </td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center gap-2 {{ $borrowing->is_overdue ? 'text-red-600 font-medium' : 'text-gray-600' }}">
-                            <span>⏰</span>
-                            {{ $borrowing->due_date->format('d M Y') }}
-                        </div>
+                    <td class="px-6 py-4 {{ $borrowing->is_overdue ? 'text-red-600 font-medium' : 'text-gray-600' }}">
+                        {{ $borrowing->due_date->format('d M Y') }}
                     </td>
                     <td class="px-6 py-4">
                         @if($borrowing->status === 'returned')
                             <span class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
-                                ✅ Dikembalikan
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Dikembalikan
                             </span>
                         @elseif($borrowing->is_overdue)
-                            <span class="px-3 py-1.5 bg-red-100 text-red-600 text-xs font-medium rounded-lg inline-flex items-center gap-1 animate-pulse">
-                                ⚠️ Terlambat {{ abs($borrowing->days_remaining) }} hari
+                            <span class="px-3 py-1.5 bg-red-100 text-red-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                Terlambat {{ abs($borrowing->days_remaining) }} hari
                             </span>
                         @else
                             <span class="px-3 py-1.5 bg-green-100 text-green-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
-                                📖 Dipinjam
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                </svg>
+                                Dipinjam
                             </span>
                         @endif
                     </td>
@@ -137,8 +163,11 @@
                                 <form action="{{ route('admin.borrowings.return', $borrowing) }}" method="POST">
                                     @csrf
                                     @method('PUT')
-                                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm rounded-xl font-medium hover:shadow-lg transition flex items-center gap-1">
-                                        ✅ Kembalikan
+                                    <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Kembalikan
                                     </button>
                                 </form>
                             @else
@@ -150,7 +179,9 @@
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-16 text-center">
-                        <div class="text-5xl mb-4">📋</div>
+                        <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
                         <p class="text-gray-500 font-medium">Tidak ada data peminjaman</p>
                         <p class="text-gray-400 text-sm mt-1">Catat peminjaman baru untuk memulai</p>
                     </td>
