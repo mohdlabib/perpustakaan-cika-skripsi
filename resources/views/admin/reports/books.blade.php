@@ -108,7 +108,7 @@
                 @foreach($books as $index => $book)
                 @php $borrowed = $book->borrowings->where('status', 'borrowed')->count(); @endphp
                 <tr class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 text-gray-500">{{ $index + 1 }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ ($books->currentPage() - 1) * $books->perPage() + $index + 1 }}</td>
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ Str::limit($book->title, 40) }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $book->author }}</td>
                     <td class="px-6 py-4">
@@ -129,6 +129,10 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+    
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+        {{ $books->withQueryString()->links() }}
     </div>
 </div>
 

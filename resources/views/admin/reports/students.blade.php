@@ -92,7 +92,7 @@
                 @foreach($students as $index => $student)
                 @php $activeBorrowings = $student->borrowings->where('status', 'borrowed')->count(); @endphp
                 <tr class="hover:bg-gray-50 transition">
-                    <td class="px-6 py-4 text-gray-500">{{ $index + 1 }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ ($students->currentPage() - 1) * $students->perPage() + $index + 1 }}</td>
                     <td class="px-6 py-4 font-mono text-gray-600">{{ $student->nis }}</td>
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ $student->name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $student->class ?? '-' }}</td>
@@ -115,6 +115,10 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+    
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+        {{ $students->withQueryString()->links() }}
     </div>
 </div>
 @endsection

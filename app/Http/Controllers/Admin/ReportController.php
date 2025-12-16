@@ -19,7 +19,7 @@ class ReportController extends Controller
             $query->where('category_id', $request->category);
         }
         
-        $books = $query->orderBy('title')->get();
+        $books = $query->with('borrowings')->orderBy('title')->paginate(15);
         $categories = Category::orderBy('name')->get();
         
         // Statistics
@@ -57,7 +57,7 @@ class ReportController extends Controller
             $query->where('grade_id', $request->grade);
         }
         
-        $students = $query->orderBy('name')->get();
+        $students = $query->orderBy('name')->paginate(15);
         $grades = \App\Models\Grade::orderBy('name')->get();
         
         // Statistics
