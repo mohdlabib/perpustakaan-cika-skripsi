@@ -8,6 +8,10 @@ use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\BorrowingController as AdminBorrowingController;
+use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\GradeController;
+use App\Http\Controllers\Admin\ShelfController;
+use App\Http\Controllers\Admin\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,5 +96,10 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::post('/borrowings', [AdminBorrowingController::class, 'store'])->name('borrowings.store');
     Route::get('/borrowings/{borrowing}', [AdminBorrowingController::class, 'show'])->name('borrowings.show');
     Route::put('/borrowings/{borrowing}/return', [AdminBorrowingController::class, 'returnBook'])->name('borrowings.return');
+    
+    // Master Data
+    Route::resource('students', StudentController::class);
+    Route::resource('grades', GradeController::class);
+    Route::resource('shelves', ShelfController::class);
+    Route::resource('categories', CategoryController::class);
 });
-

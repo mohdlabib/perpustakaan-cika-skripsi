@@ -5,134 +5,159 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Category;
-use App\Exports\BooksExport;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
-    /**
-     * Display books list.
-     */
     public function index(Request $request)
     {
-        $query = Book::with('category');
-
+        $query = Book::with('category')->latest();
+        
         if ($request->filled('search')) {
             $query->search($request->search);
         }
-
+        
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
-
-        $books = $query->orderBy('title')->paginate(15);
-        $categories = Category::all();
-
+        
+        $books = $query->paginate(15);
+        $categories = Category::orderBy('name')->get();
+        
         return view('admin.books.index', compact('books', 'categories'));
     }
 
-    /**
-     * Show create book form.
-     */
     public function create()
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         return view('admin.books.create', compact('categories'));
     }
 
-    /**
-     * Store new book.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'isbn' => 'nullable|string|max:20|unique:books',
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
+            'isbn' => 'nullable|string|max:50',
+            'item_code' => 'nullable|string|max:50',
+            'edition' => 'nullable|string|max:100',
             'publisher' => 'nullable|string|max:255',
             'publication_year' => 'nullable|integer|min:1900|max:' . date('Y'),
-            'shelf_location' => 'nullable|string|max:50',
-            'stock' => 'required|integer|min:0',
+            'publication_place' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'cover_image' => 'nullable|image|max:2048',
+            'physical_description' => 'nullable|string|max:255',
+            'classification' => 'nullable|string|max:100',
+            'call_number' => 'nullable|string|max:100',
+            'inventory_code' => 'nullable|string|max:100',
+            'shelf_location' => 'nullable|string|max:50',
+            'received_date' => 'nullable|date',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
+        
         if ($request->hasFile('cover_image')) {
-            $validated['cover_image'] = $request->file('cover_image')
-                ->store('covers', 'public');
+            $validated['cover_image'] = $request->file('cover_image')->store('book-covers', 'public');
         }
-
+        
         Book::create($validated);
-
+        
         return redirect()->route('admin.books.index')
             ->with('success', 'Buku berhasil ditambahkan.');
     }
 
-    /**
-     * Show book details.
-     */
-    public function show(Book $book)
-    {
-        $book->load(['category', 'borrowings.student']);
-        return view('admin.books.show', compact('book'));
-    }
-
-    /**
-     * Show edit book form.
-     */
     public function edit(Book $book)
     {
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         return view('admin.books.edit', compact('book', 'categories'));
     }
 
-    /**
-     * Update book.
-     */
     public function update(Request $request, Book $book)
     {
         $validated = $request->validate([
-            'isbn' => 'nullable|string|max:20|unique:books,isbn,' . $book->id,
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
+            'isbn' => 'nullable|string|max:50',
+            'item_code' => 'nullable|string|max:50',
+            'edition' => 'nullable|string|max:100',
             'publisher' => 'nullable|string|max:255',
             'publication_year' => 'nullable|integer|min:1900|max:' . date('Y'),
-            'shelf_location' => 'nullable|string|max:50',
-            'stock' => 'required|integer|min:0',
+            'publication_place' => 'nullable|string|max:100',
             'description' => 'nullable|string',
-            'cover_image' => 'nullable|image|max:2048',
+            'physical_description' => 'nullable|string|max:255',
+            'classification' => 'nullable|string|max:100',
+            'call_number' => 'nullable|string|max:100',
+            'inventory_code' => 'nullable|string|max:100',
+            'shelf_location' => 'nullable|string|max:50',
+            'received_date' => 'nullable|date',
+            'price' => 'nullable|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
-
+        
         if ($request->hasFile('cover_image')) {
-            $validated['cover_image'] = $request->file('cover_image')
-                ->store('covers', 'public');
+            // Delete old image
+            if ($book->cover_image) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $validated['cover_image'] = $request->file('cover_image')->store('book-covers', 'public');
         }
-
+        
         $book->update($validated);
-
+        
         return redirect()->route('admin.books.index')
             ->with('success', 'Buku berhasil diperbarui.');
     }
 
-    /**
-     * Delete book.
-     */
     public function destroy(Book $book)
     {
+        if ($book->cover_image) {
+            Storage::disk('public')->delete($book->cover_image);
+        }
+        
         $book->delete();
-
+        
         return redirect()->route('admin.books.index')
             ->with('success', 'Buku berhasil dihapus.');
     }
 
-    /**
-     * Export books to Excel.
-     */
     public function export()
     {
-        return Excel::download(new BooksExport, 'daftar-buku-' . date('Y-m-d') . '.xlsx');
+        // Simple CSV export
+        $books = Book::with('category')->get();
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="books-export.csv"',
+        ];
+        
+        $callback = function() use ($books) {
+            $file = fopen('php://output', 'w');
+            
+            // Header
+            fputcsv($file, ['Judul', 'Pengarang', 'Kategori', 'ISBN', 'Kode Eksemplar', 'Penerbit', 'Tahun', 'Stok', 'Lokasi Rak']);
+            
+            // Data
+            foreach ($books as $book) {
+                fputcsv($file, [
+                    $book->title,
+                    $book->author,
+                    $book->category->name ?? '',
+                    $book->isbn,
+                    $book->item_code,
+                    $book->publisher,
+                    $book->publication_year,
+                    $book->stock,
+                    $book->shelf_location,
+                ]);
+            }
+            
+            fclose($file);
+        };
+        
+        return response()->stream($callback, 200, $headers);
     }
 }
