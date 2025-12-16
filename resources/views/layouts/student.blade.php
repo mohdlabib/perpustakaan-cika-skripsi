@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Perpustakaan SMAN 7 Pekanbaru')</title>
+    <title>@yield('title', 'Perpustakaan SMAN 8 Pekanbaru')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,8 +25,8 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                        @if(file_exists(public_path('logo-sekolah.jpg')))
-                            <img src="{{ asset('logo-sekolah.jpg') }}" alt="Logo SMAN 7" class="w-10 h-10 rounded-lg object-cover">
+                        @if(file_exists(public_path('logo-sekolah.png')))
+                            <img src="{{ asset('logo-sekolah.png') }}" alt="Logo SMAN 8" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
                         @else
                             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@
                         @endif
                         <div class="hidden sm:block">
                             <span class="font-bold text-lg">Perpustakaan</span>
-                            <span class="text-white/70 text-sm block -mt-1">SMAN 7 Pekanbaru</span>
+                            <span class="text-white/70 text-sm block -mt-1">SMAN 8 Pekanbaru</span>
                         </div>
                     </a>
                 </div>
@@ -120,8 +120,8 @@
             <div class="grid md:grid-cols-3 gap-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        @if(file_exists(public_path('logo-sekolah.jpg')))
-                            <img src="{{ asset('logo-sekolah.jpg') }}" alt="Logo" class="w-10 h-10 rounded-lg object-cover">
+                        @if(file_exists(public_path('logo-sekolah.png')))
+                            <img src="{{ asset('logo-sekolah.png') }}" alt="Logo" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
                         @else
                             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -131,10 +131,10 @@
                         @endif
                         <div>
                             <span class="font-bold text-lg">Perpustakaan</span>
-                            <span class="text-white/70 text-sm block">SMAN 7 Pekanbaru</span>
+                            <span class="text-white/70 text-sm block">SMAN 8 Pekanbaru</span>
                         </div>
                     </div>
-                    <p class="text-white/70 text-sm">Sistem perpustakaan digital SMAN 7 Pekanbaru untuk mendukung kegiatan belajar mengajar.</p>
+                    <p class="text-white/70 text-sm">Sistem perpustakaan digital SMAN 8 Pekanbaru untuk mendukung kegiatan belajar mengajar.</p>
                 </div>
                 <div>
                     <h4 class="font-semibold mb-3">Menu Cepat</h4>
@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="border-t border-white/10 mt-8 pt-6 text-center text-white/50 text-sm">
-                <p>© {{ date('Y') }} Perpustakaan SMAN 7 Pekanbaru. Sistem Informasi Perpustakaan.</p>
+                <p>© {{ date('Y') }} Perpustakaan SMAN 8 Pekanbaru. Sistem Informasi Perpustakaan.</p>
             </div>
         </div>
     </footer>
