@@ -171,10 +171,8 @@
         </table>
     </div>
     
-    @if($students->hasPages())
     <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
         {{ $students->withQueryString()->links() }}
     </div>
-    @endif
 </div>
 @endsection

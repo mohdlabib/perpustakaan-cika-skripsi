@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\ShelfController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,4 +104,14 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::resource('grades', GradeController::class);
     Route::resource('shelves', ShelfController::class);
     Route::resource('categories', CategoryController::class);
+    
+    // Settings
+    Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+    Route::post('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
+    
+    // Reports
+    Route::get('/reports/books', [ReportController::class, 'books'])->name('reports.books');
+    Route::get('/reports/books/export', [ReportController::class, 'exportBooks'])->name('reports.books.export');
+    Route::get('/reports/students', [ReportController::class, 'students'])->name('reports.students');
+    Route::get('/reports/students/export', [ReportController::class, 'exportStudents'])->name('reports.students.export');
 });

@@ -149,7 +149,7 @@
                     @if(session('student'))
                         @if($book->is_available)
                             <button type="button" @click="showModal = true"
-                                class="px-8 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                                class="px-8 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                 </svg>
@@ -164,7 +164,7 @@
                             </button>
                         @endif
                     @else
-                        <a href="{{ route('student.login') }}" class="px-8 py-3 bg-primary-dark text-white rounded-xl font-semibold hover:bg-opacity-90 transition flex items-center gap-2">
+                        <a href="{{ route('student.login') }}" class="px-8 py-3 bg-primary-dark text-white rounded-xl font-semibold hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                             </svg>
@@ -172,7 +172,7 @@
                         </a>
                     @endif
                     
-                    <a href="{{ route('catalog.index') }}" class="px-8 py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition flex items-center gap-2">
+                    <a href="{{ route('catalog.index') }}" class="px-8 py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition flex items-center gap-2 cursor-pointer">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                         </svg>
@@ -194,7 +194,7 @@
         </h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             @foreach($relatedBooks as $related)
-                <a href="{{ route('catalog.show', $related) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+                <a href="{{ route('catalog.show', $related) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 cursor-pointer">
                     <div class="aspect-[3/4] bg-gradient-to-br from-primary-light to-gray-100">
                         @if($related->cover_image)
                             <img src="{{ Storage::url($related->cover_image) }}" alt="{{ $related->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -250,9 +250,14 @@
                 </div>
             </div>
             
+            <!-- Error message -->
+            <div x-show="errorMessage" x-cloak class="bg-red-50 border border-red-200 text-red-700 p-3 rounded-xl mb-4 text-sm">
+                <p x-text="errorMessage"></p>
+            </div>
+            
             <div class="flex gap-4">
                 <button type="button" @click="borrowBook()" :disabled="loading" 
-                    class="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    class="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
                     <template x-if="loading">
                         <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -266,7 +271,7 @@
                     </template>
                     <span x-text="loading ? 'Memproses...' : 'Ya, Pinjam'"></span>
                 </button>
-                <button type="button" @click="showModal = false" class="flex-1 py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition">
+                <button type="button" @click="showModal = false" class="flex-1 py-3 border-2 border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition cursor-pointer">
                     Batal
                 </button>
             </div>
@@ -280,22 +285,48 @@ function bookDetail() {
     return {
         showModal: false,
         loading: false,
+        errorMessage: '',
         
         async borrowBook() {
             this.loading = true;
+            this.errorMessage = '';
+            
             try {
                 const response = await axios.post('{{ route("borrowings.store") }}', {
                     book_id: {{ $book->id }}
                 });
+                
                 if (response.data.success) {
                     this.showModal = false;
-                    window.notify.success(response.data.message);
+                    // Show success notification
+                    if (window.notify && window.notify.success) {
+                        window.notify.success(response.data.message);
+                    } else {
+                        alert(response.data.message);
+                    }
                     setTimeout(() => location.reload(), 1500);
+                } else {
+                    this.errorMessage = response.data.message || 'Terjadi kesalahan';
                 }
             } catch (error) {
-                const message = error.response?.data?.message || 'Terjadi kesalahan';
-                window.notify.error(message);
+                console.error('Borrow error:', error);
+                
+                if (error.response) {
+                    if (error.response.status === 401) {
+                        this.errorMessage = 'Silakan login terlebih dahulu untuk meminjam buku.';
+                        setTimeout(() => {
+                            window.location.href = '{{ route("student.login") }}';
+                        }, 2000);
+                    } else {
+                        this.errorMessage = error.response.data?.message || 'Terjadi kesalahan saat memproses peminjaman.';
+                    }
+                } else if (error.request) {
+                    this.errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+                } else {
+                    this.errorMessage = 'Terjadi kesalahan: ' + error.message;
+                }
             }
+            
             this.loading = false;
         }
     }
@@ -303,3 +334,4 @@ function bookDetail() {
 </script>
 @endpush
 @endsection
+
