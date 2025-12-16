@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* School Library Color Palette */
+    --color-primary-dark: #2E4A35;
+    --color-primary-light: #E8F5E9;
+    --color-accent-green: #4CAF50;
+    --color-cream: #F5F5F0;
+}
+
+/* Custom Utility Classes */
+@layer utilities {
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .text-gradient {
+        background: linear-gradient(to right, var(--color-primary-dark), var(--color-accent-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}

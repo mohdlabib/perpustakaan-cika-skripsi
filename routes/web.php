@@ -1,0 +1,96 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\StudentLoginController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\BorrowingController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BookController;
+use App\Http\Controllers\Admin\BorrowingController as AdminBorrowingController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Home / Welcome
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+// Admin Authentication Routes
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::post('/login', function (\Illuminate\Http\Request $request) {
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    if (\Illuminate\Support\Facades\Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended('/admin');
+    }
+
+    return back()->withErrors([
+        'email' => 'Email atau password salah.',
+    ])->onlyInput('email');
+})->name('login.submit');
+
+Route::post('/logout', function (\Illuminate\Http\Request $request) {
+    \Illuminate\Support\Facades\Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/');
+})->name('logout');
+
+// Student Authentication
+Route::prefix('login')->group(function () {
+    Route::get('/student', [StudentLoginController::class, 'showLoginForm'])->name('student.login');
+    Route::post('/student', [StudentLoginController::class, 'login'])->name('student.login.submit');
+});
+Route::post('/logout/student', [StudentLoginController::class, 'logout'])->name('student.logout');
+
+// Public Catalog
+Route::prefix('catalog')->group(function () {
+    Route::get('/', [CatalogController::class, 'index'])->name('catalog.index');
+    Route::get('/search', [CatalogController::class, 'search'])->name('catalog.search');
+    Route::get('/{book}', [CatalogController::class, 'show'])->name('catalog.show');
+});
+
+// Attendance (QR Scanning)
+Route::prefix('attendance')->group(function () {
+    Route::get('/scan', [AttendanceController::class, 'scan'])->name('attendance.scan');
+    Route::post('/store', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::get('/stats', [AttendanceController::class, 'todayStats'])->name('attendance.stats');
+});
+
+// Student Borrowing
+Route::prefix('borrowings')->group(function () {
+    Route::post('/', [BorrowingController::class, 'store'])->name('borrowings.store');
+    Route::get('/my-books', [BorrowingController::class, 'myBooks'])->name('borrowings.my-books');
+});
+
+// Admin Routes (protected by auth middleware)
+Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/chart-data', [DashboardController::class, 'chartData'])->name('dashboard.chart-data');
+    
+    // Books CRUD
+    Route::resource('books', BookController::class);
+    Route::get('/books-export', [BookController::class, 'export'])->name('books.export');
+    
+    // Borrowings Management
+    Route::get('/borrowings', [AdminBorrowingController::class, 'index'])->name('borrowings.index');
+    Route::get('/borrowings/create', [AdminBorrowingController::class, 'create'])->name('borrowings.create');
+    Route::post('/borrowings', [AdminBorrowingController::class, 'store'])->name('borrowings.store');
+    Route::get('/borrowings/{borrowing}', [AdminBorrowingController::class, 'show'])->name('borrowings.show');
+    Route::put('/borrowings/{borrowing}/return', [AdminBorrowingController::class, 'returnBook'])->name('borrowings.return');
+});
+
