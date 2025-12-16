@@ -5,48 +5,65 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-8" x-data="catalogSearch()">
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Katalog Buku</h1>
-        <p class="text-gray-600 mt-2">Temukan buku favoritmu dari koleksi perpustakaan</p>
+    <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">📚 Katalog Buku</h1>
+        <p class="text-gray-600 text-lg">Temukan buku favoritmu dari koleksi perpustakaan</p>
+    </div>
+    
+    <!-- Stats Bar -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center shadow-sm">
+            <div class="text-3xl font-bold text-primary-dark">{{ $books->total() }}</div>
+            <div class="text-gray-500 text-sm">Total Buku</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center shadow-sm">
+            <div class="text-3xl font-bold text-green-600">{{ \App\Models\Book::where('stock', '>', 0)->count() }}</div>
+            <div class="text-gray-500 text-sm">Tersedia</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center shadow-sm">
+            <div class="text-3xl font-bold text-purple-600">{{ \App\Models\Category::count() }}</div>
+            <div class="text-gray-500 text-sm">Kategori</div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 text-center shadow-sm">
+            <div class="text-3xl font-bold text-orange-600">{{ \App\Models\Borrowing::active()->count() }}</div>
+            <div class="text-gray-500 text-sm">Dipinjam</div>
+        </div>
     </div>
     
     <!-- Search & Filters -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
-        <form action="{{ route('catalog.index') }}" method="GET" class="flex flex-col md:flex-row gap-4">
+    <div class="bg-white rounded-3xl shadow-lg p-6 mb-8 border border-gray-100">
+        <form action="{{ route('catalog.index') }}" method="GET" class="flex flex-col lg:flex-row gap-4">
             <!-- Search Input -->
             <div class="flex-1 relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
                 <input 
                     type="text" 
                     name="search" 
                     value="{{ request('search') }}"
                     placeholder="Cari judul, penulis, atau ISBN..."
-                    class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                    class="w-full pl-14 pr-4 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition text-lg"
                     x-model="searchQuery"
-                    @input.debounce.300ms="liveSearch"
                 >
-                <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
             </div>
             
             <!-- Category Filter -->
-            <select name="category" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition min-w-[180px]">
-                <option value="">Semua Kategori</option>
+            <select name="category" class="px-5 py-4 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition min-w-[200px] text-gray-700">
+                <option value="">🏷️ Semua Kategori</option>
                 @foreach($categories as $category)
                     <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                        {{ $category->name }} ({{ $category->books_count }})
+                        {{ $category->icon ?? '📁' }} {{ $category->name }} ({{ $category->books_count }})
                     </option>
                 @endforeach
             </select>
             
             <!-- Available Only -->
-            <label class="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-xl cursor-pointer">
-                <input type="checkbox" name="available" value="1" {{ request('available') ? 'checked' : '' }} class="w-4 h-4 text-primary-dark rounded">
-                <span class="text-gray-700 whitespace-nowrap">Tersedia</span>
+            <label class="flex items-center gap-3 px-5 py-4 bg-gray-50 rounded-2xl cursor-pointer hover:bg-gray-100 transition">
+                <input type="checkbox" name="available" value="1" {{ request('available') ? 'checked' : '' }} class="w-5 h-5 text-primary-dark rounded-lg">
+                <span class="text-gray-700 font-medium whitespace-nowrap">✅ Tersedia Saja</span>
             </label>
             
             <!-- Search Button -->
-            <button type="submit" class="px-6 py-3 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition">
+            <button type="submit" class="px-8 py-4 bg-gradient-to-r from-primary-dark to-green-700 text-white rounded-2xl font-semibold hover:shadow-lg transition text-lg">
                 Cari
             </button>
         </form>
@@ -55,82 +72,97 @@
     <!-- Category Pills -->
     <div class="flex flex-wrap gap-2 mb-6">
         <a href="{{ route('catalog.index') }}" 
-           class="px-4 py-2 rounded-full text-sm font-medium transition {{ !request('category') ? 'bg-primary-dark text-white' : 'bg-white text-gray-600 hover:bg-gray-100' }}">
-            Semua
+           class="px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm {{ !request('category') ? 'bg-primary-dark text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+            📚 Semua
         </a>
         @foreach($categories as $category)
             <a href="{{ route('catalog.index', ['category' => $category->id]) }}" 
-               class="px-4 py-2 rounded-full text-sm font-medium transition {{ request('category') == $category->id ? 'bg-primary-dark text-white' : 'bg-white text-gray-600 hover:bg-gray-100' }}">
-                {{ $category->icon ?? '' }} {{ $category->name }}
+               class="px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-sm {{ request('category') == $category->id ? 'bg-primary-dark text-white shadow-lg' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200' }}">
+                {{ $category->icon ?? '📁' }} {{ $category->name }}
             </a>
         @endforeach
     </div>
     
     <!-- Results Count -->
-    <div class="mb-4 text-gray-600">
-        Menampilkan {{ $books->total() }} buku
+    <div class="mb-6 flex items-center justify-between">
+        <p class="text-gray-600">
+            Menampilkan <strong>{{ $books->count() }}</strong> dari <strong>{{ $books->total() }}</strong> buku
+        </p>
+        @if(request('search') || request('category') || request('available'))
+            <a href="{{ route('catalog.index') }}" class="text-primary-dark hover:underline text-sm font-medium flex items-center gap-1">
+                ✖️ Reset Filter
+            </a>
+        @endif
     </div>
     
     <!-- Books Grid (Shopee Style) -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
         @forelse($books as $book)
-            <a href="{{ route('catalog.show', $book) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
+            <a href="{{ route('catalog.show', $book) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
                 <!-- Book Cover -->
                 <div class="aspect-[3/4] bg-gradient-to-br from-primary-light to-gray-100 relative overflow-hidden">
                     @if($book->cover_image)
-                        <img src="{{ Storage::url($book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img src="{{ Storage::url($book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
-                            <svg class="w-16 h-16 text-primary-dark/30" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm0 2v16h12V4H6zm2 2h8v2H8V6z"/>
-                            </svg>
+                            <span class="text-6xl opacity-30">📕</span>
                         </div>
                     @endif
                     
                     <!-- Availability Badge -->
-                    <div class="absolute top-2 right-2">
+                    <div class="absolute top-3 right-3">
                         @if($book->is_available)
-                            <span class="px-2 py-1 bg-green-500 text-white text-xs font-medium rounded-lg">
+                            <span class="px-3 py-1.5 bg-green-500 text-white text-xs font-bold rounded-lg shadow-lg flex items-center gap-1">
+                                <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                                 Tersedia
                             </span>
                         @else
-                            <span class="px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-lg">
+                            <span class="px-3 py-1.5 bg-red-500 text-white text-xs font-bold rounded-lg shadow-lg">
                                 Dipinjam
                             </span>
                         @endif
+                    </div>
+                    
+                    <!-- Hover Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                        <span class="text-white font-semibold text-sm">Lihat Detail →</span>
                     </div>
                 </div>
                 
                 <!-- Book Info -->
                 <div class="p-4">
-                    <h3 class="font-semibold text-gray-800 line-clamp-2 group-hover:text-primary-dark transition">
+                    <h3 class="font-bold text-gray-800 line-clamp-2 group-hover:text-primary-dark transition mb-1">
                         {{ $book->title }}
                     </h3>
-                    <p class="text-gray-500 text-sm mt-1 line-clamp-1">{{ $book->author }}</p>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="px-2 py-0.5 bg-primary-light text-primary-dark text-xs rounded-full">
-                            {{ $book->category->name ?? '-' }}
+                    <p class="text-gray-500 text-sm line-clamp-1 mb-2">{{ $book->author }}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 bg-primary-light text-primary-dark text-xs font-medium rounded-lg">
+                            {{ $book->category->icon ?? '📁' }} {{ Str::limit($book->category->name ?? '-', 10) }}
                         </span>
-                    </div>
-                    <div class="mt-2 text-xs text-gray-400">
-                        Stok: {{ $book->available_stock }}/{{ $book->stock }}
+                        <span class="text-xs text-gray-400">
+                            {{ $book->available_stock }}/{{ $book->stock }}
+                        </span>
                     </div>
                 </div>
             </a>
         @empty
-            <div class="col-span-full text-center py-12">
-                <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
-                <p class="text-gray-500">Tidak ada buku yang ditemukan.</p>
+            <div class="col-span-full bg-white rounded-2xl p-16 text-center border border-gray-100">
+                <div class="text-6xl mb-4">📚</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Tidak ada buku ditemukan</h3>
+                <p class="text-gray-500 mb-6">Coba ubah filter atau kata kunci pencarian Anda</p>
+                <a href="{{ route('catalog.index') }}" class="inline-block px-6 py-3 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition">
+                    🔄 Reset Pencarian
+                </a>
             </div>
         @endforelse
     </div>
     
     <!-- Pagination -->
-    <div class="mt-8">
+    @if($books->hasPages())
+    <div class="mt-8 bg-white rounded-2xl p-4 border border-gray-100">
         {{ $books->withQueryString()->links() }}
     </div>
+    @endif
 </div>
 
 @push('scripts')
@@ -138,26 +170,6 @@
 function catalogSearch() {
     return {
         searchQuery: '{{ request("search") }}',
-        results: [],
-        loading: false,
-        
-        async liveSearch() {
-            if (this.searchQuery.length < 2) {
-                this.results = [];
-                return;
-            }
-            
-            this.loading = true;
-            try {
-                const response = await axios.get('{{ route("catalog.search") }}', {
-                    params: { q: this.searchQuery }
-                });
-                this.results = response.data.results;
-            } catch (error) {
-                console.error('Search error:', error);
-            }
-            this.loading = false;
-        }
     }
 }
 </script>
