@@ -114,4 +114,8 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::get('/reports/books/export', [ReportController::class, 'exportBooks'])->name('reports.books.export');
     Route::get('/reports/students', [ReportController::class, 'students'])->name('reports.students');
     Route::get('/reports/students/export', [ReportController::class, 'exportStudents'])->name('reports.students.export');
+    
+    // Barcode Scanner
+    Route::get('/scan', [\App\Http\Controllers\Admin\ScanController::class, 'index'])->name('scan');
+    Route::post('/scan/process', [\App\Http\Controllers\Admin\ScanController::class, 'process'])->name('scan.process');
 });
