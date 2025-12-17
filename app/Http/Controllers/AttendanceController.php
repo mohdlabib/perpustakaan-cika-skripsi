@@ -25,8 +25,19 @@ class AttendanceController extends Controller
             'token' => 'required|string',
         ]);
 
-        // Verify the QR token
-        if ($request->token !== 'SCHOOLING_LIBRARY_CHECKIN_TOKEN') {
+        // Verify the QR token - accept various valid tokens
+        $validTokens = [
+            'SCHOOLING_LIBRARY_CHECKIN_TOKEN',
+            'PERPUS_SMAN8_PEKANBARU_CHECKIN', // Permanent token
+            $this->generateDailyToken(), // Today's daily token
+        ];
+        
+        // Also accept any token starting with PERPUS_CHECKIN_ (custom tokens)
+        $isValid = in_array($request->token, $validTokens) || 
+                   str_starts_with($request->token, 'PERPUS_CHECKIN_') ||
+                   str_starts_with($request->token, 'PERPUS_SMAN8_');
+        
+        if (!$isValid) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kode QR tidak valid.',
@@ -86,5 +97,14 @@ class AttendanceController extends Controller
             'today' => $todayCount,
             'this_week' => $weekCount,
         ]);
+    }
+    
+    /**
+     * Generate daily token for attendance.
+     */
+    private function generateDailyToken()
+    {
+        $date = now()->format('Y-m-d');
+        return 'PERPUS_SMAN8_' . strtoupper(md5('attendance_' . $date . '_secret'));
     }
 }

@@ -118,4 +118,8 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     // Barcode Scanner
     Route::get('/scan', [\App\Http\Controllers\Admin\ScanController::class, 'index'])->name('scan');
     Route::post('/scan/process', [\App\Http\Controllers\Admin\ScanController::class, 'process'])->name('scan.process');
+    
+    // Attendance QR Generator
+    Route::get('/attendance', [\App\Http\Controllers\Admin\AttendanceQrController::class, 'index'])->name('attendance');
+    Route::post('/attendance/generate', [\App\Http\Controllers\Admin\AttendanceQrController::class, 'generateQr'])->name('attendance.generate');
 });
