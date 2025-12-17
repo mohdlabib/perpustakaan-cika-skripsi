@@ -124,40 +124,14 @@ class BookController extends Controller
             ->with('success', 'Buku berhasil dihapus.');
     }
 
-    public function export()
+    public function export(Request $request)
     {
-        // Simple CSV export
-        $books = Book::with('category')->get();
+        $category = $request->input('category');
+        $filename = 'Laporan-Buku-Perpustakaan-SMAN8-' . date('Y-m-d') . '.xlsx';
         
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="books-export.csv"',
-        ];
-        
-        $callback = function() use ($books) {
-            $file = fopen('php://output', 'w');
-            
-            // Header
-            fputcsv($file, ['Judul', 'Pengarang', 'Kategori', 'ISBN', 'Kode Eksemplar', 'Penerbit', 'Tahun', 'Stok', 'Lokasi Rak']);
-            
-            // Data
-            foreach ($books as $book) {
-                fputcsv($file, [
-                    $book->title,
-                    $book->author,
-                    $book->category->name ?? '',
-                    $book->isbn,
-                    $book->item_code,
-                    $book->publisher,
-                    $book->publication_year,
-                    $book->stock,
-                    $book->shelf_location,
-                ]);
-            }
-            
-            fclose($file);
-        };
-        
-        return response()->stream($callback, 200, $headers);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\BooksExport($category),
+            $filename
+        );
     }
 }
