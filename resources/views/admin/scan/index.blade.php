@@ -57,8 +57,16 @@
         
         <!-- Camera View -->
         <div class="mb-4">
+            <!-- Camera Error Message -->
+            <div x-show="cameraError" x-cloak class="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-4 flex items-center gap-3">
+                <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-sm" x-text="cameraError"></span>
+            </div>
+            
             <!-- Camera Placeholder (shown when inactive) -->
-            <div x-show="!cameraActive" class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-8 flex flex-col items-center justify-center min-h-[280px] border-2 border-dashed border-gray-300">
+            <div x-show="!cameraActive && !cameraError" class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-8 flex flex-col items-center justify-center min-h-[280px] border-2 border-dashed border-gray-300">
                 <div class="w-20 h-20 bg-white/80 rounded-full flex items-center justify-center mb-4 shadow-lg">
                     <svg class="w-10 h-10 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
@@ -71,8 +79,8 @@
             
             <!-- Actual Camera Preview (shown when active) -->
             <div x-show="cameraActive" x-cloak class="relative">
-                <div id="reader" class="rounded-xl overflow-hidden bg-black min-h-[280px]"></div>
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+                <div id="reader" class="rounded-xl overflow-hidden bg-black" style="width: 100%; min-height: 320px;"></div>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm z-10">
                     <span class="flex items-center gap-2">
                         <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                         Arahkan kamera ke barcode
@@ -205,6 +213,31 @@
     </div>
 </div>
 
+@push('styles')
+<style>
+    /* Fix for html5-qrcode video element */
+    #reader video {
+        width: 100% !important;
+        height: auto !important;
+        object-fit: cover;
+        border-radius: 0.75rem;
+    }
+    #reader {
+        position: relative;
+    }
+    #reader > div {
+        border: none !important;
+    }
+    /* Hide the default scan region border */
+    #reader__scan_region {
+        min-height: 280px;
+    }
+    #reader__scan_region > img {
+        display: none;
+    }
+</style>
+@endpush
+
 @push('scripts')
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -212,53 +245,91 @@ function barcodeScanner() {
     return {
         scanType: 'book',
         cameraActive: false,
+        cameraError: null,
         manualCode: '',
         loading: false,
         result: null,
         html5QrCode: null,
         
         async toggleCamera() {
+            this.cameraError = null;
             if (this.cameraActive) {
-                this.stopCamera();
+                await this.stopCamera();
             } else {
-                this.startCamera();
+                await this.startCamera();
             }
         },
         
         async startCamera() {
             try {
+                // Check if browser supports getUserMedia
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    this.cameraError = 'Browser Anda tidak mendukung akses kamera. Gunakan browser modern seperti Chrome atau Firefox.';
+                    return;
+                }
+                
+                // Request camera permission first
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                    // Stop the test stream immediately
+                    stream.getTracks().forEach(track => track.stop());
+                } catch (permErr) {
+                    console.error('Permission error:', permErr);
+                    if (permErr.name === 'NotAllowedError') {
+                        this.cameraError = 'Izin kamera ditolak. Silakan berikan izin kamera di pengaturan browser Anda.';
+                    } else if (permErr.name === 'NotFoundError') {
+                        this.cameraError = 'Tidak ditemukan kamera pada perangkat ini.';
+                    } else {
+                        this.cameraError = 'Gagal mengakses kamera: ' + permErr.message;
+                    }
+                    return;
+                }
+                
+                // Get the reader element dimensions
+                const readerElement = document.getElementById('reader');
+                const readerWidth = readerElement.offsetWidth || 640;
+                
                 this.html5QrCode = new Html5Qrcode("reader");
+                
+                const config = {
+                    fps: 10,
+                    qrbox: { width: Math.min(250, readerWidth - 50), height: 150 },
+                    aspectRatio: 1.5,
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.QR_CODE,
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.CODE_39,
+                        Html5QrcodeSupportedFormats.CODE_93,
+                        Html5QrcodeSupportedFormats.UPC_A,
+                        Html5QrcodeSupportedFormats.UPC_E,
+                        Html5QrcodeSupportedFormats.ITF,
+                        Html5QrcodeSupportedFormats.CODABAR,
+                    ]
+                };
+                
                 await this.html5QrCode.start(
                     { facingMode: "environment" },
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 150 },
-                        aspectRatio: 1.5,
-                        formatsToSupport: [
-                            Html5QrcodeSupportedFormats.QR_CODE,
-                            Html5QrcodeSupportedFormats.EAN_13,
-                            Html5QrcodeSupportedFormats.EAN_8,
-                            Html5QrcodeSupportedFormats.CODE_128,
-                            Html5QrcodeSupportedFormats.CODE_39,
-                            Html5QrcodeSupportedFormats.CODE_93,
-                            Html5QrcodeSupportedFormats.UPC_A,
-                            Html5QrcodeSupportedFormats.UPC_E,
-                            Html5QrcodeSupportedFormats.ITF,
-                            Html5QrcodeSupportedFormats.CODABAR,
-                        ]
-                    },
+                    config,
                     (decodedText) => {
+                        // Play a beep sound on successful scan
+                        this.playBeep();
                         this.processCode(decodedText);
                         this.stopCamera();
                     },
                     (errorMessage) => {
-                        // Ignore scan errors
+                        // Ignore scan errors (scanning continues)
                     }
                 );
+                
                 this.cameraActive = true;
+                this.cameraError = null;
+                
             } catch (err) {
                 console.error("Camera error:", err);
-                alert("Gagal membuka kamera. Pastikan izin kamera diberikan.");
+                this.cameraError = 'Gagal memulai kamera. ' + (err.message || 'Pastikan izin kamera diberikan.');
+                this.cameraActive = false;
             }
         },
         
@@ -266,11 +337,36 @@ function barcodeScanner() {
             if (this.html5QrCode) {
                 try {
                     await this.html5QrCode.stop();
+                    this.html5QrCode.clear();
                 } catch (err) {
                     console.error("Stop camera error:", err);
                 }
+                this.html5QrCode = null;
             }
             this.cameraActive = false;
+        },
+        
+        playBeep() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 1000;
+                oscillator.type = 'sine';
+                gainNode.gain.value = 0.3;
+                
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.stop();
+                    audioContext.close();
+                }, 150);
+            } catch (e) {
+                // Ignore audio errors
+            }
         },
         
         async processCode(code) {

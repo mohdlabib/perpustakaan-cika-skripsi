@@ -194,13 +194,25 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Cover Buku</label>
                         @if(isset($book) && $book->cover_image)
-                            <div class="mb-3">
+                            <div class="mb-3" id="current-cover">
+                                <p class="text-xs text-gray-500 mb-1">Cover saat ini:</p>
                                 <img src="{{ Storage::url($book->cover_image) }}" class="w-24 h-32 rounded-lg object-cover shadow border">
                             </div>
                         @endif
-                        <input type="file" name="cover_image" accept="image/*"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-light file:text-primary-dark file:font-medium cursor-pointer">
+                        <div class="relative">
+                            <input type="file" name="cover_image" accept="image/jpeg,image/png,image/jpg" id="cover_image_input"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-light file:text-primary-dark file:font-medium cursor-pointer"
+                                onchange="previewCover(this)">
+                        </div>
+                        <!-- Preview new image -->
+                        <div id="cover-preview" class="mt-3 hidden">
+                            <p class="text-xs text-gray-500 mb-1">Preview:</p>
+                            <img id="cover-preview-img" class="w-24 h-32 rounded-lg object-cover shadow border">
+                        </div>
                         <p class="text-gray-400 text-sm mt-2">Format: JPG, PNG. Maksimal 2MB.</p>
+                        @error('cover_image')
+                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -217,7 +229,46 @@
                     Batal
                 </a>
             </div>
-        </form>
+</form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+function previewCover(input) {
+    const preview = document.getElementById('cover-preview');
+    const previewImg = document.getElementById('cover-preview-img');
+    
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // Validate file size (2MB max)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('Ukuran file terlalu besar. Maksimal 2MB.');
+            input.value = '';
+            preview.classList.add('hidden');
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        if (!validTypes.includes(file.type)) {
+            alert('Format file tidak valid. Gunakan JPG atau PNG.');
+            input.value = '';
+            preview.classList.add('hidden');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.classList.remove('hidden');
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.classList.add('hidden');
+    }
+}
+</script>
+@endpush
 @endsection
