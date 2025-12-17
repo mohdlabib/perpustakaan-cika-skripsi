@@ -22,7 +22,7 @@
             <div class="md:col-span-1">
                 <div class="aspect-[3/4] bg-gradient-to-br from-primary-light to-gray-100 rounded-2xl overflow-hidden shadow-md">
                     @if($book->cover_image)
-                        <img src="{{ Storage::url($book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
+                        <img src="{{ $book->cover_url }}" alt="{{ $book->title }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <svg class="w-24 h-24 text-primary-dark/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +197,7 @@
                 <a href="{{ route('catalog.show', $related) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 cursor-pointer">
                     <div class="aspect-[3/4] bg-gradient-to-br from-primary-light to-gray-100">
                         @if($related->cover_image)
-                            <img src="{{ Storage::url($related->cover_image) }}" alt="{{ $related->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            <img src="{{ $related->cover_url }}" alt="{{ $related->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         @else
                             <div class="w-full h-full flex items-center justify-center">
                                 <svg class="w-12 h-12 text-primary-dark/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -81,4 +81,17 @@ class Book extends Model
               ->orWhere('inventory_code', 'like', "%{$search}%");
         });
     }
+
+    /**
+     * Get the cover image URL with correct path for hosting compatibility
+     */
+    public function getCoverUrlAttribute(): ?string
+    {
+        if (!$this->cover_image) {
+            return null;
+        }
+        
+        // Always use /storage/app/public/ path for hosting compatibility
+        return url('/storage/app/public/' . $this->cover_image);
+    }
 }

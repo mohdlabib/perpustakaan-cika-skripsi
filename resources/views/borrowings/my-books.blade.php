@@ -28,7 +28,7 @@
                         <div class="flex gap-4">
                             <div class="w-16 h-20 bg-primary-light rounded-lg flex-shrink-0 flex items-center justify-center">
                                 @if($borrowing->book->cover_image)
-                                    <img src="{{ Storage::url($borrowing->book->cover_image) }}" class="w-full h-full object-cover rounded-lg">
+                                    <img src="{{ $borrowing->book->cover_url }}" class="w-full h-full object-cover rounded-lg">
                                 @else
                                     <svg class="w-8 h-8 text-primary-dark/30" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>

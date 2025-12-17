@@ -196,7 +196,7 @@
                         @if(isset($book) && $book->cover_image)
                             <div class="mb-3" id="current-cover">
                                 <p class="text-xs text-gray-500 mb-1">Cover saat ini:</p>
-                                <img src="{{ Storage::url($book->cover_image) }}" class="w-24 h-32 rounded-lg object-cover shadow border">
+                                <img src="{{ $book->cover_url }}" class="w-24 h-32 rounded-lg object-cover shadow border">
                             </div>
                         @endif
                         <div class="relative">

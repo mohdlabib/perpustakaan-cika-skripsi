@@ -140,7 +140,7 @@
             <a href="{{ route('catalog.show', $book) }}" class="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100">
                 <div class="aspect-[3/4] bg-gradient-to-br from-primary-light to-gray-100 relative overflow-hidden">
                     @if($book->cover_image)
-                        <img src="{{ Storage::url($book->cover_image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ $book->cover_url }}" alt="{{ $book->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <svg class="w-16 h-16 text-primary-dark/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
