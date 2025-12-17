@@ -29,7 +29,7 @@
             </button>
             
             <button @click="scanType = 'return'" 
-                    :class="scanType === 'return' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-700 border-gray-200 hover:border-orange-300'"
+                    :class="scanType === 'return' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'"
                     class="p-4 rounded-xl border-2 transition flex flex-col items-center gap-2 cursor-pointer">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
@@ -56,8 +56,29 @@
         </div>
         
         <!-- Camera View -->
-        <div x-show="cameraActive" class="mb-4">
-            <div id="reader" class="rounded-xl overflow-hidden"></div>
+        <div class="mb-4">
+            <!-- Camera Placeholder (shown when inactive) -->
+            <div x-show="!cameraActive" class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl p-8 flex flex-col items-center justify-center min-h-[280px] border-2 border-dashed border-gray-300">
+                <div class="w-20 h-20 bg-white/80 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                    <svg class="w-10 h-10 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <p class="text-gray-600 font-medium text-lg mb-1">Kamera Tidak Aktif</p>
+                <p class="text-gray-500 text-sm">Klik tombol "Buka Kamera" untuk memulai scanning</p>
+            </div>
+            
+            <!-- Actual Camera Preview (shown when active) -->
+            <div x-show="cameraActive" x-cloak class="relative">
+                <div id="reader" class="rounded-xl overflow-hidden bg-black min-h-[280px]"></div>
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm">
+                    <span class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        Arahkan kamera ke barcode
+                    </span>
+                </div>
+            </div>
         </div>
         
         <!-- Manual Input -->
@@ -156,7 +177,7 @@
         
         <!-- Return Result -->
         <template x-if="result?.type === 'return' && result?.data">
-            <div class="bg-orange-50 rounded-xl p-4">
+            <div class="bg-purple-50 rounded-xl p-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-gray-500 text-sm">Buku</p>
@@ -212,6 +233,7 @@ function barcodeScanner() {
                     {
                         fps: 10,
                         qrbox: { width: 250, height: 150 },
+                        aspectRatio: 1.5,
                         formatsToSupport: [
                             Html5QrcodeSupportedFormats.QR_CODE,
                             Html5QrcodeSupportedFormats.EAN_13,
@@ -279,3 +301,4 @@ function barcodeScanner() {
 </script>
 @endpush
 @endsection
+
