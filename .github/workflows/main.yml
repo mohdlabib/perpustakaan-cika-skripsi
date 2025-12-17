@@ -1,0 +1,43 @@
+name: 🚀 Auto Deploy perpus8sma
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-main:
+    name: 🎉 Deploy to main
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            BASE_DIR="/home/u955170694/domains/digilib8.taro.web.id/public/"
+
+            echo "--- Deploying to $BASE_DIR (main) ---"
+            cd "$BASE_DIR" || { echo "Error: Directory $BASE_DIR not found."; exit 1; }
+
+            echo "Pulling latest code for main..."
+            git pull
+
+            echo "Running Laravel optimizations for main..."
+            php artisan migrate --force || echo "Migrations skipped or already up to date."
+            php artisan optimize
+            php artisan filament:optimize
+
+            echo "Installing npm packages for main..."
+            npm install
+
+            echo "Building frontend assets for main..."
+            npm run build
+
+            echo "Deployment to main completed successfully!"
