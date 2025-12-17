@@ -78,13 +78,47 @@
             </div>
             
             <!-- Actual Camera Preview (shown when active) -->
-            <div x-show="cameraActive" x-cloak class="relative">
-                <div id="reader" class="rounded-xl overflow-hidden bg-black" style="width: 100%; min-height: 320px;"></div>
-                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm backdrop-blur-sm z-10">
-                    <span class="flex items-center gap-2">
+            <div x-show="cameraActive" x-cloak class="relative rounded-xl overflow-hidden">
+                <!-- Camera Feed Container -->
+                <div id="reader" class="bg-black" style="width: 100%; min-height: 320px;"></div>
+                
+                <!-- Scan Frame Overlay -->
+                <div class="absolute inset-0 pointer-events-none z-20">
+                    <!-- Dark overlay with transparent center -->
+                    <div class="absolute inset-0 bg-black/40"></div>
+                    
+                    <!-- Scan area frame (center transparent box) -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-40">
+                        <!-- Clear the dark overlay in the scan area -->
+                        <div class="absolute inset-0 bg-transparent" style="box-shadow: 0 0 0 9999px rgba(0,0,0,0.4);"></div>
+                        
+                        <!-- Corner brackets -->
+                        <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-400 rounded-tl-lg"></div>
+                        <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-400 rounded-tr-lg"></div>
+                        <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-400 rounded-bl-lg"></div>
+                        <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-400 rounded-br-lg"></div>
+                        
+                        <!-- Animated scan line -->
+                        <div class="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent animate-scan-line"></div>
+                    </div>
+                </div>
+                
+                <!-- Top Status Bar -->
+                <div class="absolute top-4 left-4 right-4 flex justify-between items-center z-30">
+                    <div class="bg-black/60 text-white px-3 py-1.5 rounded-lg text-xs font-medium backdrop-blur-sm flex items-center gap-2">
                         <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                        Arahkan kamera ke barcode
-                    </span>
+                        LIVE
+                    </div>
+                    <div class="bg-black/60 text-white px-3 py-1.5 rounded-lg text-xs backdrop-blur-sm" x-text="scanType === 'book' ? '📚 Mode Buku' : scanType === 'student' ? '👤 Mode Siswa' : '↩️ Mode Return'">
+                    </div>
+                </div>
+                
+                <!-- Bottom Instruction -->
+                <div class="absolute bottom-4 left-4 right-4 z-30">
+                    <div class="bg-black/70 text-white px-4 py-3 rounded-xl text-center backdrop-blur-sm">
+                        <p class="font-medium text-sm">📷 Arahkan kamera ke barcode</p>
+                        <p class="text-white/60 text-xs mt-1">Posisikan barcode di dalam kotak hijau</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -234,6 +268,30 @@
     }
     #reader__scan_region > img {
         display: none;
+    }
+    /* Hide default qrcode scanning box */
+    #qr-shaded-region {
+        display: none !important;
+    }
+    /* Animated scan line */
+    @keyframes scan-line {
+        0% {
+            top: 10%;
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            top: 90%;
+            opacity: 0;
+        }
+    }
+    .animate-scan-line {
+        animation: scan-line 2s ease-in-out infinite;
     }
 </style>
 @endpush
