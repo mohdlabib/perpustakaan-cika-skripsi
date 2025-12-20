@@ -9,7 +9,8 @@
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Mode Scan</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button @click="scanType = 'book'" 
-                    :class="scanType === 'book' ? 'bg-blue-500 text-white border-blue-500' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-300'"
+                    :class="scanType === 'book' ? 'text-white' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400'"
+                    :style="scanType === 'book' ? 'background-color: #3b82f6; border-color: #3b82f6;' : ''"
                     class="p-4 rounded-xl border-2 transition flex flex-col items-center gap-2 cursor-pointer">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -19,7 +20,8 @@
             </button>
             
             <button @click="scanType = 'student'" 
-                    :class="scanType === 'student' ? 'bg-green-500 text-white border-green-500' : 'bg-white text-gray-700 border-gray-200 hover:border-green-300'"
+                    :class="scanType === 'student' ? 'text-white' : 'bg-white text-gray-700 border-gray-200 hover:border-green-400'"
+                    :style="scanType === 'student' ? 'background-color: #22c55e; border-color: #22c55e;' : ''"
                     class="p-4 rounded-xl border-2 transition flex flex-col items-center gap-2 cursor-pointer">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -29,7 +31,8 @@
             </button>
             
             <button @click="scanType = 'return'" 
-                    :class="scanType === 'return' ? 'bg-purple-500 text-white border-purple-500' : 'bg-white text-gray-700 border-gray-200 hover:border-purple-300'"
+                    :class="scanType === 'return' ? 'text-white border-primary-dark' : 'bg-white text-gray-700 border-gray-200 hover:border-primary-dark'"
+                    :style="scanType === 'return' ? 'background-color: #9333ea; border-color: #9333ea;' : ''"
                     class="p-4 rounded-xl border-2 transition flex flex-col items-center gap-2 cursor-pointer">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
