@@ -1,6 +1,6 @@
 @extends('layouts.student')
 
-@section('title', 'Login Siswa - Perpustakaan')
+@section('title', 'Login Siswa - Perpustakaan Jendela Ilmu')
 
 @section('content')
 <div class="min-h-[80vh] flex items-center justify-center px-4 py-12">

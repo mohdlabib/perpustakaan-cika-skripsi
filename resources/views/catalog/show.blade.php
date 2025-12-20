@@ -1,6 +1,6 @@
 @extends('layouts.student')
 
-@section('title', $book->title . ' - Perpustakaan')
+@section('title', $book->title . ' - Perpustakaan Jendela Ilmu')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-8" x-data="bookDetail()">

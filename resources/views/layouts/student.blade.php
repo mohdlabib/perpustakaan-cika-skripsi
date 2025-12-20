@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Perpustakaan SMAN 8 Pekanbaru')</title>
+    <title>@yield('title', 'Perpustakaan Jendela Ilmu')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,7 +36,7 @@
                         @endif
                         <div class="hidden sm:block">
                             <span class="font-bold text-lg">Perpustakaan</span>
-                            <span class="text-white/70 text-sm block -mt-1">SMAN 8 Pekanbaru</span>
+                            <span class="text-white/70 text-sm block -mt-1">Jendela Ilmu</span>
                         </div>
                     </a>
                 </div>
@@ -52,7 +52,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                         </svg>
-                        <span class="hidden sm:inline">Absensi</span>
+                        <span class="hidden sm:inline">Pengunjung</span>
                     </a>
                     
                     @if(session('student'))
@@ -131,7 +131,7 @@
                         @endif
                         <div>
                             <span class="font-bold text-lg">Perpustakaan</span>
-                            <span class="text-white/70 text-sm block">SMAN 8 Pekanbaru</span>
+                            <span class="text-white/70 text-sm block">Jendela Ilmu</span>
                         </div>
                     </div>
                     <p class="text-white/70 text-sm">Sistem perpustakaan digital SMAN 8 Pekanbaru untuk mendukung kegiatan belajar mengajar.</p>
@@ -149,7 +149,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                             </svg>
-                            Scan Absensi
+                            Scan Pengunjung
                         </a></li>
                         <li><a href="{{ route('student.login') }}" class="hover:text-white transition flex items-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,7 +178,7 @@
                 </div>
             </div>
             <div class="border-t border-white/10 mt-8 pt-6 text-center text-white/50 text-sm">
-                <p>© {{ date('Y') }} Perpustakaan SMAN 8 Pekanbaru. Sistem Informasi Perpustakaan.</p>
+                <p>© {{ date('Y') }} Perpustakaan Jendela Ilmu. Sistem Informasi Perpustakaan.</p>
             </div>
         </div>
     </footer>

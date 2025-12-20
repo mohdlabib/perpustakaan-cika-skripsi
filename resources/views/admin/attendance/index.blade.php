@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Generate QR Absensi')
+@section('page-title', 'Generate QR Pengunjung')
 
 @section('content')
 <div x-data="qrGenerator()">
@@ -54,7 +54,7 @@
                 <svg class="w-5 h-5 text-primary-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                 </svg>
-                Generate QR Code Absensi
+                Generate QR Code Pengunjung
             </h2>
             
             <!-- QR Type Selection -->
@@ -184,7 +184,7 @@
             </li>
             <li class="flex items-start gap-2">
                 <span class="font-bold">4.</span>
-                <span>Siswa login dengan NIS, lalu scan QR untuk absensi di: <code class="bg-blue-100 px-2 py-0.5 rounded">/attendance/scan</code></span>
+                <span>Siswa login dengan NIS, lalu scan QR untuk catat kehadiran di: <code class="bg-blue-100 px-2 py-0.5 rounded">/attendance/scan</code></span>
             </li>
         </ul>
     </div>
@@ -217,7 +217,7 @@ function qrGenerator() {
             
             const link = document.createElement('a');
             link.href = this.qrData.qr_url;
-            link.download = 'qr-absensi-perpustakaan-' + new Date().toISOString().split('T')[0] + '.png';
+            link.download = 'qr-pengunjung-perpustakaan-' + new Date().toISOString().split('T')[0] + '.png';
             link.click();
         },
         
@@ -229,7 +229,7 @@ function qrGenerator() {
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Print QR Code Absensi</title>
+                    <title>Print QR Code Pengunjung</title>
                     <style>
                         body { 
                             font-family: Arial, sans-serif; 
@@ -244,8 +244,8 @@ function qrGenerator() {
                     </style>
                 </head>
                 <body>
-                    <h1>📚 Perpustakaan SMAN 8 Pekanbaru</h1>
-                    <h2>Scan untuk Absensi Kunjungan</h2>
+                    <h1>📚 Perpustakaan Jendela Ilmu</h1>
+                    <h2>Scan untuk Catat Kehadiran Pengunjung</h2>
                     <img src="${this.qrData.qr_url}" alt="QR Code">
                     <p>${this.qrData.label}</p>
                     <div class="footer">

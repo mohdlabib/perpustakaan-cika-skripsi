@@ -1,11 +1,11 @@
 @extends('layouts.student')
 
-@section('title', 'Absensi QR - Perpustakaan')
+@section('title', 'Pengunjung - Perpustakaan Jendela Ilmu')
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 py-8" x-data="qrScanner()">
     <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Absensi Perpustakaan</h1>
+        <h1 class="text-3xl font-bold text-gray-800">Pengunjung Perpustakaan Jendela Ilmu</h1>
         <p class="text-gray-600 mt-2">Scan QR Code untuk mencatat kehadiran</p>
     </div>
     
@@ -52,7 +52,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-green-600 mb-2">Absensi Berhasil!</h3>
+                    <h3 class="text-xl font-semibold text-green-600 mb-2">Kehadiran Tercatat!</h3>
                     <p class="text-gray-500" x-text="successMessage"></p>
                 </div>
                 
@@ -108,26 +108,47 @@ function qrScanner() {
         errorMessage: '',
         scanner: null,
         
-        startScanner() {
+        async startScanner() {
             this.scanning = true;
             this.success = false;
             this.error = false;
             
-            this.scanner = new Html5QrcodeScanner("qr-reader", {
+            // Use Html5Qrcode directly to control camera selection
+            this.scanner = new Html5Qrcode("qr-reader");
+            
+            const config = {
                 qrbox: { width: 250, height: 250 },
                 fps: 10,
-            });
+            };
             
-            this.scanner.render((decodedText) => {
-                this.handleScan(decodedText);
-            }, (error) => {
-                // Ignore errors during scanning
-            });
+            try {
+                // Start with back camera (environment) by default
+                await this.scanner.start(
+                    { facingMode: "environment" },
+                    config,
+                    (decodedText) => {
+                        this.handleScan(decodedText);
+                    },
+                    (error) => {
+                        // Ignore errors during scanning
+                    }
+                );
+            } catch (err) {
+                console.error("Camera error:", err);
+                this.error = true;
+                this.errorMessage = 'Gagal mengakses kamera. Pastikan izin kamera diberikan.';
+                this.scanning = false;
+            }
         },
         
-        stopScanner() {
+        async stopScanner() {
             if (this.scanner) {
-                this.scanner.clear();
+                try {
+                    await this.scanner.stop();
+                    this.scanner.clear();
+                } catch (err) {
+                    console.error("Stop scanner error:", err);
+                }
             }
             this.scanning = false;
         },

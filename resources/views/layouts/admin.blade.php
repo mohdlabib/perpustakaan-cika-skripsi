@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin - Perpustakaan SMAN 8 Pekanbaru')</title>
+    <title>@yield('title', 'Admin - Perpustakaan Jendela Ilmu')</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,7 +54,7 @@
                     @endif
                     <div>
                         <span class="font-bold text-lg">Perpustakaan</span>
-                        <span class="text-white/70 text-xs block">SMAN 8 Pekanbaru</span>
+                        <span class="text-white/70 text-xs block">Jendela Ilmu</span>
                     </div>
                 </a>
             </div>
@@ -191,7 +191,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
                         </svg>
-                        Generate QR Absensi
+                        Generate QR Pengunjung
                     </a>
                     
                     <a href="{{ route('catalog.index') }}" class="flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/10 rounded-xl transition cursor-pointer mb-1">
@@ -302,7 +302,7 @@
             
             <footer class="bg-white border-t border-gray-100 px-4 lg:px-8 py-4 mt-auto">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2 text-gray-500 text-xs lg:text-sm">
-                    <p>© {{ date('Y') }} Perpustakaan SMAN 8 Pekanbaru</p>
+                    <p>© {{ date('Y') }} Perpustakaan Jendela Ilmu</p>
                     <p>Sistem Informasi Perpustakaan v1.0</p>
                 </div>
             </footer>
