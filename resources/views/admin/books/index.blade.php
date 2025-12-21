@@ -209,51 +209,60 @@
     <!-- Book Detail Modal -->
     <div x-show="isOpen" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <!-- Background overlay -->
+            <!-- Background overlay with blur effect -->
             <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-gray-500/75 transition-opacity" @click="closeModal()"></div>
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-all" @click="closeModal()"></div>
 
-            <!-- Modal panel -->
+            <!-- Modal panel with shadow -->
             <div x-show="isOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" 
                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
+                class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl ring-1 ring-black/5 transition-all sm:my-8 sm:w-full sm:max-w-3xl">
                 
                 <!-- Loading State -->
-                <div x-show="loading" class="p-8 text-center">
-                    <svg class="animate-spin w-12 h-12 text-primary-dark mx-auto" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p class="text-gray-500 mt-3">Memuat detail buku...</p>
+                <div x-show="loading" class="p-12 text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 relative">
+                        <div class="absolute inset-0 border-4 border-primary-dark/20 rounded-full"></div>
+                        <div class="absolute inset-0 border-4 border-transparent border-t-primary-dark rounded-full animate-spin"></div>
+                    </div>
+                    <p class="text-gray-500 font-medium">Memuat detail buku...</p>
                 </div>
 
                 <!-- Book Detail Content -->
-                <div x-show="!loading && book">
+                <div x-show="!loading && book" class="max-h-[85vh] overflow-y-auto">
                     <!-- Header with Cover -->
-                    <div class="bg-gradient-to-r from-primary-dark to-green-700 p-6 text-white">
-                        <div class="flex justify-between items-start">
-                            <div class="flex gap-4">
-                                <div class="w-20 h-28 bg-white/20 rounded-lg overflow-hidden flex-shrink-0 shadow-lg">
+                    <div class="bg-gradient-to-br from-primary-dark via-green-700 to-green-800 p-8 text-white relative overflow-hidden">
+                        <!-- Decorative circles -->
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full"></div>
+                        <div class="absolute -bottom-20 -left-10 w-60 h-60 bg-white/5 rounded-full"></div>
+                        
+                        <div class="flex justify-between items-start relative z-10">
+                            <div class="flex gap-6">
+                                <div class="w-28 h-40 bg-white/20 rounded-xl overflow-hidden flex-shrink-0 shadow-2xl ring-4 ring-white/20">
                                     <template x-if="book?.cover_url">
                                         <img :src="book.cover_url" class="w-full h-full object-cover">
                                     </template>
                                     <template x-if="!book?.cover_url">
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <svg class="w-8 h-8 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/30 to-white/10">
+                                            <svg class="w-12 h-12 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                             </svg>
                                         </div>
                                     </template>
                                 </div>
-                                <div>
-                                    <h3 class="text-xl font-bold" x-text="book?.title"></h3>
-                                    <p class="text-white/80 mt-1" x-text="book?.author || 'Penulis tidak diketahui'"></p>
-                                    <span class="inline-block mt-2 px-3 py-1 bg-white/20 rounded-lg text-sm" x-text="book?.category?.name || '-'"></span>
+                                <div class="flex flex-col justify-center">
+                                    <h3 class="text-2xl font-bold leading-tight" x-text="book?.title"></h3>
+                                    <p class="text-white/80 mt-2 text-lg" x-text="book?.author || 'Penulis tidak diketahui'"></p>
+                                    <div class="flex flex-wrap gap-2 mt-4">
+                                        <span class="px-3 py-1.5 bg-white/20 backdrop-blur rounded-lg text-sm font-medium" x-text="book?.category?.name || 'Tidak berkategori'"></span>
+                                        <template x-if="book?.edition">
+                                            <span class="px-3 py-1.5 bg-white/10 backdrop-blur rounded-lg text-sm" x-text="book?.edition"></span>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
-                            <button @click="closeModal()" class="text-white/80 hover:text-white transition cursor-pointer">
+                            <button @click="closeModal()" class="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-xl transition cursor-pointer">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -262,58 +271,145 @@
                     </div>
 
                     <!-- Book Details -->
-                    <div class="p-6">
-                        <div class="grid grid-cols-2 gap-4 mb-6">
-                            <div class="bg-gray-50 rounded-xl p-4">
-                                <p class="text-gray-500 text-sm">ISBN</p>
-                                <p class="font-semibold text-gray-800" x-text="book?.isbn || '-'"></p>
-                            </div>
-                            <div class="bg-gray-50 rounded-xl p-4">
-                                <p class="text-gray-500 text-sm">Penerbit</p>
-                                <p class="font-semibold text-gray-800" x-text="book?.publisher || '-'"></p>
-                            </div>
-                            <div class="bg-gray-50 rounded-xl p-4">
-                                <p class="text-gray-500 text-sm">Tahun Terbit</p>
-                                <p class="font-semibold text-gray-800" x-text="book?.year || '-'"></p>
-                            </div>
-                            <div class="bg-gray-50 rounded-xl p-4">
-                                <p class="text-gray-500 text-sm">Lokasi Rak</p>
-                                <p class="font-semibold text-gray-800" x-text="book?.shelf_location || '-'"></p>
-                            </div>
-                        </div>
-
-                        <!-- Stock Info -->
-                        <div class="bg-blue-50 rounded-xl p-4 mb-6">
+                    <div class="p-8">
+                        <!-- Stock Info Card -->
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 mb-8 border border-blue-100">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-blue-700 text-sm font-medium">Stok Tersedia / Total</p>
-                                    <p class="text-2xl font-bold text-blue-800">
-                                        <span x-text="book?.available_stock"></span>
-                                        <span class="text-blue-400">/</span>
-                                        <span x-text="book?.stock"></span>
-                                    </p>
+                                    <p class="text-blue-700 text-sm font-medium mb-1">Ketersediaan Stok</p>
+                                    <div class="flex items-baseline gap-2">
+                                        <span class="text-4xl font-bold text-blue-800" x-text="book?.available_stock"></span>
+                                        <span class="text-blue-400 text-2xl">/</span>
+                                        <span class="text-2xl text-blue-600" x-text="book?.stock"></span>
+                                        <span class="text-blue-500 text-sm ml-1">eksemplar</span>
+                                    </div>
                                 </div>
-                                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Section: Identifikasi & Kode -->
+                        <div class="mb-8">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                Identifikasi & Kode
+                            </h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">ISBN/ISSN</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.isbn || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Kode Eksemplar</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.item_code || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">No. Inventaris</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.inventory_code || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Klasifikasi</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.classification || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Nomor Panggil</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.call_number || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Lokasi Rak</p>
+                                    <p class="font-semibold text-gray-800 mt-1">
+                                        <template x-if="book?.shelf_location">
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-sm" x-text="book?.shelf_location"></span>
+                                        </template>
+                                        <template x-if="!book?.shelf_location">
+                                            <span>-</span>
+                                        </template>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: Informasi Penerbitan -->
+                        <div class="mb-8">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                Informasi Penerbitan
+                            </h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Penerbit</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.publisher || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Tahun Terbit</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.publication_year || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Tempat Terbit</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.publication_place || '-'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: Fisik & Penerimaan -->
+                        <div class="mb-8">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Fisik & Penerimaan
+                            </h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Deskripsi Fisik</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.physical_description || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Tanggal Diterima</p>
+                                    <p class="font-semibold text-gray-800 mt-1" x-text="book?.received_date || '-'"></p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition">
+                                    <p class="text-gray-500 text-xs uppercase tracking-wide">Harga Buku</p>
+                                    <p class="font-semibold text-gray-800 mt-1">
+                                        <template x-if="book?.price">
+                                            <span x-text="'Rp ' + new Intl.NumberFormat('id-ID').format(book?.price)"></span>
+                                        </template>
+                                        <template x-if="!book?.price">
+                                            <span>-</span>
+                                        </template>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Description -->
-                        <div x-show="book?.description">
-                            <h4 class="font-semibold text-gray-800 mb-2">Deskripsi</h4>
-                            <p class="text-gray-600 text-sm leading-relaxed" x-text="book?.description"></p>
+                        <div x-show="book?.description" class="mb-2">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                                </svg>
+                                Sinopsis / Deskripsi
+                            </h4>
+                            <div class="bg-gray-50 rounded-xl p-5">
+                                <p class="text-gray-700 leading-relaxed whitespace-pre-line" x-text="book?.description"></p>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Footer Actions -->
-                    <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-                        <button @click="closeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-100 transition cursor-pointer">
+                    <div class="bg-gray-50 px-8 py-5 flex justify-end gap-3 border-t border-gray-100">
+                        <button @click="closeModal()" class="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-100 transition cursor-pointer">
                             Tutup
                         </button>
-                        <a :href="'/admin/books/' + book?.id + '/edit'" class="px-4 py-2 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2">
+                        <a :href="'/admin/books/' + book?.id + '/edit'" class="px-5 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 shadow-lg shadow-primary-dark/20">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                             </svg>
