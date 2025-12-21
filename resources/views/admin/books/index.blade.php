@@ -297,12 +297,21 @@
                                         <span class="text-gray-500">No. Panggil</span>
                                         <span class="font-medium text-gray-800 text-right" x-text="book?.call_number || '-'"></span>
                                     </div>
-                                    <div class="flex justify-between py-1.5">
+                                    <div class="flex justify-between py-1.5 border-b border-gray-100">
                                         <span class="text-gray-500">Lokasi Rak</span>
                                         <template x-if="book?.shelf_location">
                                             <span class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded text-xs font-medium" x-text="book?.shelf_location"></span>
                                         </template>
                                         <template x-if="!book?.shelf_location">
+                                            <span class="text-gray-400">-</span>
+                                        </template>
+                                    </div>
+                                    <div class="flex justify-between py-1.5">
+                                        <span class="text-gray-500">Kolom</span>
+                                        <template x-if="book?.shelf_column">
+                                            <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium" x-text="'Kolom ' + book?.shelf_column?.name"></span>
+                                        </template>
+                                        <template x-if="!book?.shelf_column">
                                             <span class="text-gray-400">-</span>
                                         </template>
                                     </div>

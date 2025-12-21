@@ -136,7 +136,7 @@ class BookController extends Controller
      */
     public function detail(Book $book)
     {
-        $book->load(['category', 'shelf']);
+        $book->load(['category', 'shelf', 'shelfColumn']);
         
         return response()->json([
             'id' => $book->id,
@@ -159,6 +159,10 @@ class BookController extends Controller
                 'code' => $book->shelf->code,
                 'name' => $book->shelf->name,
                 'location' => $book->shelf->location,
+            ] : null,
+            'shelf_column' => $book->shelfColumn ? [
+                'id' => $book->shelfColumn->id,
+                'name' => $book->shelfColumn->name,
             ] : null,
             'received_date' => $book->received_date ? $book->received_date->format('d M Y') : null,
             'price' => $book->price,
