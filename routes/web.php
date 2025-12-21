@@ -90,6 +90,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     
     // Books CRUD
     Route::resource('books', BookController::class);
+    Route::get('/books/{book}/detail', [BookController::class, 'detail'])->name('books.detail');
     Route::get('/books-export', [BookController::class, 'export'])->name('books.export');
     
     // Borrowings Management

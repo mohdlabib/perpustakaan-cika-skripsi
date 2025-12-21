@@ -124,6 +124,32 @@ class BookController extends Controller
             ->with('success', 'Buku berhasil dihapus.');
     }
 
+    /**
+     * Get book detail for modal popup.
+     */
+    public function detail(Book $book)
+    {
+        $book->load('category');
+        
+        return response()->json([
+            'id' => $book->id,
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+            'publisher' => $book->publisher,
+            'year' => $book->publication_year,
+            'description' => $book->description,
+            'shelf_location' => $book->shelf_location,
+            'stock' => $book->stock,
+            'available_stock' => $book->available_stock,
+            'cover_url' => $book->cover_url,
+            'category' => $book->category ? [
+                'id' => $book->category->id,
+                'name' => $book->category->name,
+            ] : null,
+        ]);
+    }
+
     public function export(Request $request)
     {
         $category = $request->input('category');
@@ -135,3 +161,4 @@ class BookController extends Controller
         );
     }
 }
+
