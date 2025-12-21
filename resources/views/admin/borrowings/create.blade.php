@@ -62,7 +62,7 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
+                        class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-52 overflow-y-auto">
                         <template x-for="item in filteredItems" :key="item.nis">
                             <div @click="selectItem(item)" 
                                 class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0">
@@ -141,7 +141,7 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
+                        class="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-52 overflow-y-auto">
                         <template x-for="item in filteredItems" :key="item.id">
                             <div @click="selectItem(item)" 
                                 class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0"
