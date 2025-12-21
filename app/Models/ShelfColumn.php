@@ -5,16 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Shelf extends Model
+class ShelfColumn extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'code',
+        'shelf_id',
         'name',
-        'location',
         'description',
-        'capacity',
         'is_active',
     ];
 
@@ -22,19 +20,14 @@ class Shelf extends Model
         'is_active' => 'boolean',
     ];
 
-    public function columns()
+    public function shelf()
     {
-        return $this->hasMany(ShelfColumn::class);
+        return $this->belongsTo(Shelf::class);
     }
 
     public function books()
     {
         return $this->hasMany(Book::class);
-    }
-
-    public function getBooksCountAttribute()
-    {
-        return $this->books()->count();
     }
 
     public function scopeActive($query)
@@ -44,7 +37,6 @@ class Shelf extends Model
 
     public function getFullNameAttribute()
     {
-        return "{$this->code} - {$this->name}";
+        return $this->shelf ? "{$this->shelf->code} - Kolom {$this->name}" : "Kolom {$this->name}";
     }
 }
-

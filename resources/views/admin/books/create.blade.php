@@ -192,6 +192,33 @@
                             </svg>
                         </button>
                     </div>
+                    
+                    <!-- Column Dropdown (shows after selecting shelf) -->
+                    <div x-show="selectedId && columns.length > 0" class="mt-3">
+                        <input type="hidden" name="shelf_column_id" x-model="selectedColumnId">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kolom Rak</label>
+                        <select x-model="selectedColumnId" 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark cursor-pointer">
+                            <option value="">Pilih Kolom</option>
+                            <template x-for="col in columns" :key="col.id">
+                                <option :value="col.id" x-text="'Kolom ' + col.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                    
+                    <!-- No columns message -->
+                    <div x-show="selectedId && columns.length === 0 && !loadingColumns" class="mt-3 text-sm text-gray-500 italic">
+                        Rak ini belum memiliki kolom
+                    </div>
+                    
+                    <!-- Loading columns -->
+                    <div x-show="loadingColumns" class="mt-3 text-sm text-gray-500 flex items-center gap-2">
+                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Memuat kolom...
+                    </div>
                 </div>
             </div>
             
@@ -311,6 +338,9 @@ function shelfSelector() {
         selectedId: '{{ old('shelf_id', $book->shelf_id ?? '') }}',
         selectedName: '',
         selectedLocation: '',
+        columns: [],
+        selectedColumnId: '{{ old('shelf_column_id', $book->shelf_column_id ?? '') }}',
+        loadingColumns: false,
         
         init() {
             if (this.selectedId) {
@@ -319,6 +349,7 @@ function shelfSelector() {
                     this.selectedName = `${shelf.code} - ${shelf.name}`;
                     this.selectedLocation = shelf.location || 'Lokasi tidak ditentukan';
                     this.search = this.selectedName;
+                    this.fetchColumns(this.selectedId);
                 }
             }
         },
@@ -333,12 +364,26 @@ function shelfSelector() {
             );
         },
         
+        async fetchColumns(shelfId) {
+            this.loadingColumns = true;
+            try {
+                const response = await fetch(`/admin/shelves/${shelfId}/columns`);
+                this.columns = await response.json();
+            } catch (error) {
+                console.error('Error fetching columns:', error);
+                this.columns = [];
+            }
+            this.loadingColumns = false;
+        },
+        
         selectShelf(shelf) {
             this.selectedId = shelf.id;
             this.selectedName = `${shelf.code} - ${shelf.name}`;
             this.selectedLocation = shelf.location || 'Lokasi tidak ditentukan';
             this.search = this.selectedName;
             this.showDropdown = false;
+            this.selectedColumnId = '';
+            this.fetchColumns(shelf.id);
         },
         
         clearSelection() {
@@ -346,6 +391,8 @@ function shelfSelector() {
             this.selectedName = '';
             this.selectedLocation = '';
             this.search = '';
+            this.columns = [];
+            this.selectedColumnId = '';
         }
     }
 }

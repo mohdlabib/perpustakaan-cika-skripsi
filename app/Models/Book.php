@@ -17,6 +17,7 @@ class Book extends Model
         'edition',
         'category_id',
         'shelf_id',
+        'shelf_column_id',
         'publisher',
         'publication_year',
         'publication_place',
@@ -49,6 +50,11 @@ class Book extends Model
     public function shelf()
     {
         return $this->belongsTo(Shelf::class);
+    }
+
+    public function shelfColumn()
+    {
+        return $this->belongsTo(ShelfColumn::class);
     }
 
     public function borrowings()

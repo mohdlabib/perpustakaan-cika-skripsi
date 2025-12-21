@@ -107,6 +107,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::resource('students', StudentController::class);
     Route::resource('grades', GradeController::class);
     Route::resource('shelves', ShelfController::class);
+    Route::get('/shelves/{shelf}/columns', [ShelfController::class, 'getColumns'])->name('shelves.columns');
     Route::resource('categories', CategoryController::class);
     
     // Settings

@@ -7,7 +7,7 @@
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h2 class="text-lg font-semibold text-gray-800">Daftar Rak</h2>
-        <p class="text-gray-500 text-sm">Kelola lokasi rak perpustakaan</p>
+        <p class="text-gray-500 text-sm">Kelola lokasi rak dan kolom perpustakaan</p>
     </div>
     <a href="{{ route('admin.shelves.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,7 +26,8 @@
                     <th class="px-6 py-4 font-semibold">Kode</th>
                     <th class="px-6 py-4 font-semibold">Nama Rak</th>
                     <th class="px-6 py-4 font-semibold">Lokasi</th>
-                    <th class="px-6 py-4 font-semibold">Status</th>
+                    <th class="px-6 py-4 font-semibold text-center">Kolom</th>
+                    <th class="px-6 py-4 font-semibold text-center">Jumlah Buku</th>
                     <th class="px-6 py-4 font-semibold text-right">Aksi</th>
                 </tr>
             </thead>
@@ -38,12 +39,15 @@
                     </td>
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ $shelf->name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $shelf->location ?? '-' }}</td>
-                    <td class="px-6 py-4">
-                        @if($shelf->is_active)
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg">Aktif</span>
-                        @else
-                            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg">Nonaktif</span>
-                        @endif
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg">
+                            {{ $shelf->columns_count ?? 0 }} kolom
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-lg">
+                            {{ $shelf->books_count ?? 0 }} buku
+                        </span>
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-end gap-2">
@@ -66,7 +70,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-16 text-center">
+                    <td colspan="6" class="px-6 py-16 text-center">
                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                         </svg>
@@ -83,3 +87,4 @@
     </div>
 </div>
 @endsection
+

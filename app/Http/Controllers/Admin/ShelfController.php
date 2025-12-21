@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shelf;
+use App\Models\ShelfColumn;
 use Illuminate\Http\Request;
 
 class ShelfController extends Controller
 {
     public function index()
     {
-        $shelves = Shelf::orderBy('code')->paginate(15);
+        $shelves = Shelf::withCount(['books', 'columns'])->orderBy('code')->paginate(15);
         return view('admin.shelves.index', compact('shelves'));
     }
 
@@ -28,9 +29,20 @@ class ShelfController extends Controller
             'description' => 'nullable|string',
             'capacity' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
+            'columns' => 'nullable|array',
+            'columns.*' => 'required|string|max:50',
         ]);
         
-        Shelf::create($request->all());
+        $shelf = Shelf::create($request->except('columns'));
+        
+        // Create columns if provided
+        if ($request->has('columns')) {
+            foreach ($request->columns as $columnName) {
+                if (trim($columnName)) {
+                    $shelf->columns()->create(['name' => trim($columnName)]);
+                }
+            }
+        }
         
         return redirect()->route('admin.shelves.index')
             ->with('success', 'Rak berhasil ditambahkan.');
@@ -38,6 +50,7 @@ class ShelfController extends Controller
 
     public function edit(Shelf $shelf)
     {
+        $shelf->load('columns');
         return view('admin.shelves.edit', compact('shelf'));
     }
 
@@ -50,9 +63,25 @@ class ShelfController extends Controller
             'description' => 'nullable|string',
             'capacity' => 'nullable|integer|min:1',
             'is_active' => 'boolean',
+            'columns' => 'nullable|array',
+            'columns.*' => 'required|string|max:50',
         ]);
         
-        $shelf->update($request->all());
+        $shelf->update($request->except('columns'));
+        
+        // Sync columns - delete old ones and create new ones
+        $existingColumns = $shelf->columns()->pluck('name')->toArray();
+        $newColumns = array_filter(array_map('trim', $request->columns ?? []));
+        
+        // Delete removed columns
+        $shelf->columns()->whereNotIn('name', $newColumns)->delete();
+        
+        // Add new columns
+        foreach ($newColumns as $columnName) {
+            if (!in_array($columnName, $existingColumns)) {
+                $shelf->columns()->create(['name' => $columnName]);
+            }
+        }
         
         return redirect()->route('admin.shelves.index')
             ->with('success', 'Rak berhasil diperbarui.');
@@ -65,4 +94,15 @@ class ShelfController extends Controller
         return redirect()->route('admin.shelves.index')
             ->with('success', 'Rak berhasil dihapus.');
     }
+
+    /**
+     * Get columns for a shelf (AJAX)
+     */
+    public function getColumns(Shelf $shelf)
+    {
+        return response()->json(
+            $shelf->columns()->active()->orderBy('name')->get(['id', 'name'])
+        );
+    }
 }
+
