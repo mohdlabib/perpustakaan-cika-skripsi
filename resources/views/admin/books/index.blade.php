@@ -282,7 +282,7 @@
                                         <span class="font-medium text-gray-800 text-right" x-text="book?.isbn || '-'"></span>
                                     </div>
                                     <div class="flex justify-between py-1.5 border-b border-gray-100">
-                                        <span class="text-gray-500">Kode Barcode</span>
+                                        <span class="text-gray-500">Kode Eksemplar</span>
                                         <span class="font-medium text-gray-800 text-right" x-text="book?.item_code || '-'"></span>
                                     </div>
                                     <div class="flex justify-between py-1.5 border-b border-gray-100">

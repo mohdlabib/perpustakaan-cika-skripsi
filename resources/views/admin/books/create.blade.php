@@ -91,7 +91,7 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Kode Barcode</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kode Eksemplar</label>
                         <input type="text" name="item_code" value="{{ old('item_code', $book->item_code ?? '') }}"
                             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
                             placeholder="Kode item">
