@@ -74,22 +74,53 @@
 </div>
 
 <!-- Filters -->
-<div class="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
+<div class="bg-white rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm" x-data="searchRecommendation()">
     <form action="{{ route('admin.borrowings.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4">
         <div class="flex-1 relative">
-            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2 z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama siswa atau judul buku..." 
-                class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark">
+            <input type="text" name="search" x-model="query" @input.debounce.300ms="search()" @focus="showDropdown = query.length >= 2" @click.away="showDropdown = false"
+                value="{{ request('search') }}" placeholder="Cari nama siswa atau judul buku..." 
+                class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                autocomplete="off">
+            
+            <!-- Search Recommendations Dropdown -->
+            <div x-show="showDropdown && recommendations.length > 0" x-cloak
+                class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-64 overflow-y-auto">
+                <template x-for="item in recommendations" :key="item.id">
+                    <button type="button" @click="selectRecommendation(item)" 
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-0 transition">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                            :class="item.type === 'student' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'">
+                            <span x-text="item.type === 'student' ? '👤' : '📚'"></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-800 truncate" x-text="item.name"></p>
+                            <p class="text-gray-500 text-xs" x-text="item.sub"></p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-lg"
+                            :class="item.type === 'student' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'"
+                            x-text="item.type === 'student' ? 'Siswa' : 'Buku'"></span>
+                    </button>
+                </template>
+            </div>
+            
+            <!-- Loading indicator -->
+            <div x-show="loading" class="absolute right-4 top-1/2 -translate-y-1/2">
+                <svg class="animate-spin w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>
         </div>
-        <select name="status" class="px-4 py-3 border border-gray-200 rounded-xl">
+        <select name="status" class="px-4 py-3 border border-gray-200 rounded-xl cursor-pointer">
             <option value="">Semua Status</option>
             <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
             <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
             <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Terlambat</option>
         </select>
-        <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition">
+        <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition cursor-pointer">
             Filter
         </button>
     </form>
@@ -195,4 +226,45 @@
         {{ $borrowings->withQueryString()->links() }}
     </div>
 </div>
+
+@push('scripts')
+<script>
+function searchRecommendation() {
+    return {
+        query: '{{ request("search") }}',
+        recommendations: [],
+        showDropdown: false,
+        loading: false,
+        
+        async search() {
+            if (this.query.length < 2) {
+                this.recommendations = [];
+                this.showDropdown = false;
+                return;
+            }
+            
+            this.loading = true;
+            
+            try {
+                const response = await axios.get('{{ route("admin.borrowings.search-recommendations") }}', {
+                    params: { q: this.query }
+                });
+                this.recommendations = response.data;
+                this.showDropdown = true;
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+            
+            this.loading = false;
+        },
+        
+        selectRecommendation(item) {
+            this.query = item.name;
+            this.showDropdown = false;
+        }
+    }
+}
+</script>
+@endpush
 @endsection
+

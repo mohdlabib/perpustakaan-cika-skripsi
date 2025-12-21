@@ -81,7 +81,7 @@
             <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIS, atau kelas..." 
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIS..." 
                 class="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition">
         </div>
         <select name="grade" class="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark cursor-pointer">
@@ -104,7 +104,6 @@
                 <tr class="text-left text-gray-600 text-sm">
                     <th class="px-6 py-4 font-semibold">Siswa</th>
                     <th class="px-6 py-4 font-semibold">NIS</th>
-                    <th class="px-6 py-4 font-semibold">Kelas</th>
                     <th class="px-6 py-4 font-semibold">Angkatan</th>
                     <th class="px-6 py-4 font-semibold">Telepon</th>
                     <th class="px-6 py-4 font-semibold text-right">Aksi</th>
@@ -129,7 +128,6 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 font-mono text-gray-600">{{ $student->nis }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $student->class ?? '-' }}</td>
                     <td class="px-6 py-4">
                         @if($student->grade)
                             <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg">{{ $student->grade->name }}</span>
@@ -159,7 +157,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-16 text-center">
+                    <td colspan="5" class="px-6 py-16 text-center">
                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>

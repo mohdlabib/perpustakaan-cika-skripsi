@@ -55,25 +55,16 @@
                 @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kelas</label>
-                    <input type="text" name="class" value="{{ old('class', $student->class ?? '') }}"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                        placeholder="Contoh: XII IPA 1">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Angkatan</label>
-                    <select name="grade_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition cursor-pointer">
-                        <option value="">Pilih Angkatan</option>
-                        @foreach($grades as $grade)
-                            <option value="{{ $grade->id }}" {{ old('grade_id', $student->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
-                                {{ $grade->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Angkatan</label>
+                <select name="grade_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition cursor-pointer">
+                    <option value="">Pilih Angkatan</option>
+                    @foreach($grades as $grade)
+                        <option value="{{ $grade->id }}" {{ old('grade_id', $student->grade_id ?? '') == $grade->id ? 'selected' : '' }}>
+                            {{ $grade->name }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
             
             <div>

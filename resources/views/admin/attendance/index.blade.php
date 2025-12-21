@@ -58,7 +58,7 @@
             </h2>
             
             <!-- QR Type Selection -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <button @click="generateQr('daily')" 
                         :class="selectedType === 'daily' ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'"
                         class="p-4 rounded-xl border border-gray-200 transition cursor-pointer text-center">
@@ -77,16 +77,6 @@
                     </svg>
                     <span class="font-medium text-gray-800 block">QR Permanen</span>
                     <span class="text-xs text-gray-500">Tidak berubah</span>
-                </button>
-                
-                <button @click="generateQr('custom')" 
-                        :class="selectedType === 'custom' ? 'ring-2 ring-purple-500 bg-purple-50' : 'hover:bg-gray-50'"
-                        class="p-4 rounded-xl border border-gray-200 transition cursor-pointer text-center">
-                    <svg class="w-8 h-8 mx-auto mb-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
-                    </svg>
-                    <span class="font-medium text-gray-800 block">QR Custom</span>
-                    <span class="text-xs text-gray-500">Token unik</span>
                 </button>
             </div>
             
@@ -172,7 +162,7 @@
         <ul class="text-blue-700 text-sm space-y-2">
             <li class="flex items-start gap-2">
                 <span class="font-bold">1.</span>
-                <span>Generate QR Code dengan memilih jenis (Harian/Permanen/Custom)</span>
+                <span>Generate QR Code dengan memilih jenis (Harian/Permanen)</span>
             </li>
             <li class="flex items-start gap-2">
                 <span class="font-bold">2.</span>

@@ -26,7 +26,6 @@
                     <th class="px-6 py-4 font-semibold">Kode</th>
                     <th class="px-6 py-4 font-semibold">Nama Rak</th>
                     <th class="px-6 py-4 font-semibold">Lokasi</th>
-                    <th class="px-6 py-4 font-semibold">Kapasitas</th>
                     <th class="px-6 py-4 font-semibold">Status</th>
                     <th class="px-6 py-4 font-semibold text-right">Aksi</th>
                 </tr>
@@ -39,7 +38,6 @@
                     </td>
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ $shelf->name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $shelf->location ?? '-' }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $shelf->capacity ?? '-' }} buku</td>
                     <td class="px-6 py-4">
                         @if($shelf->is_active)
                             <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg">Aktif</span>
@@ -68,7 +66,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-16 text-center">
+                    <td colspan="5" class="px-6 py-16 text-center">
                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                         </svg>

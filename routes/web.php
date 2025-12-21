@@ -94,6 +94,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     
     // Borrowings Management
     Route::get('/borrowings', [AdminBorrowingController::class, 'index'])->name('borrowings.index');
+    Route::get('/borrowings/search-recommendations', [AdminBorrowingController::class, 'searchRecommendations'])->name('borrowings.search-recommendations');
     Route::get('/borrowings/create', [AdminBorrowingController::class, 'create'])->name('borrowings.create');
     Route::post('/borrowings', [AdminBorrowingController::class, 'store'])->name('borrowings.store');
     Route::get('/borrowings/{borrowing}', [AdminBorrowingController::class, 'show'])->name('borrowings.show');

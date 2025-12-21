@@ -107,52 +107,7 @@
     </div>
 </div>
 
-<!-- Recent Borrowings -->
-<div class="bg-white rounded-2xl p-6 border border-gray-100">
-    <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Peminjaman Terbaru</h3>
-        <a href="{{ route('admin.borrowings.index') }}" class="text-primary-dark hover:underline text-sm">Lihat Semua →</a>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="text-left text-gray-500 text-sm border-b">
-                    <th class="pb-3 font-medium">Siswa</th>
-                    <th class="pb-3 font-medium">Buku</th>
-                    <th class="pb-3 font-medium">Tanggal Pinjam</th>
-                    <th class="pb-3 font-medium">Batas</th>
-                    <th class="pb-3 font-medium">Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($recentBorrowings as $borrowing)
-                <tr class="border-b border-gray-50">
-                    <td class="py-3">
-                        <p class="font-medium text-gray-800">{{ $borrowing->student->name ?? '-' }}</p>
-                        <p class="text-gray-400 text-xs">{{ $borrowing->student_nis }}</p>
-                    </td>
-                    <td class="py-3 text-gray-600">{{ Str::limit($borrowing->book->title ?? '-', 30) }}</td>
-                    <td class="py-3 text-gray-600">{{ $borrowing->borrow_date->format('d M Y') }}</td>
-                    <td class="py-3 text-gray-600">{{ $borrowing->due_date->format('d M Y') }}</td>
-                    <td class="py-3">
-                        @if($borrowing->status === 'returned')
-                            <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-lg">Dikembalikan</span>
-                        @elseif($borrowing->is_overdue)
-                            <span class="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-lg">Terlambat</span>
-                        @else
-                            <span class="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-lg">Dipinjam</span>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="py-8 text-center text-gray-400">Belum ada data peminjaman</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
+
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

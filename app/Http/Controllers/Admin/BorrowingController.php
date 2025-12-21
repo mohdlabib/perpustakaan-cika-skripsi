@@ -110,4 +110,50 @@ class BorrowingController extends Controller
         $borrowing->load(['student', 'book.category']);
         return view('admin.borrowings.show', compact('borrowing'));
     }
+
+    /**
+     * Search recommendations for autocomplete.
+     */
+    public function searchRecommendations(Request $request)
+    {
+        $q = $request->get('q', '');
+        
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $recommendations = [];
+
+        // Search students
+        $students = Student::where('name', 'like', "%{$q}%")
+            ->orWhere('nis', 'like', "%{$q}%")
+            ->limit(5)
+            ->get();
+
+        foreach ($students as $student) {
+            $recommendations[] = [
+                'id' => 'student_' . $student->nis,
+                'type' => 'student',
+                'name' => $student->name,
+                'sub' => 'NIS: ' . $student->nis,
+            ];
+        }
+
+        // Search books
+        $books = Book::where('title', 'like', "%{$q}%")
+            ->orWhere('author', 'like', "%{$q}%")
+            ->limit(5)
+            ->get();
+
+        foreach ($books as $book) {
+            $recommendations[] = [
+                'id' => 'book_' . $book->id,
+                'type' => 'book',
+                'name' => $book->title,
+                'sub' => $book->author ?? 'Tidak ada penulis',
+            ];
+        }
+
+        return response()->json($recommendations);
+    }
 }
