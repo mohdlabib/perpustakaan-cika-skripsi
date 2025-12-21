@@ -13,7 +13,7 @@
         </ol>
     </nav>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <!-- Header -->
         <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-t-2xl">
             <div class="flex items-center gap-4">
