@@ -13,23 +13,22 @@
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-2xl mb-6 shadow-sm">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold">Catat Peminjaman Baru</h2>
-                <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa</p>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-t-2xl">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">Catat Peminjaman Baru</h2>
+                    <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Form Card -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
         <!-- Form -->
         <form action="{{ route('admin.borrowings.store') }}" method="POST" class="p-8 space-y-6">
             @csrf
