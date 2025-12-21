@@ -196,7 +196,7 @@ function qrGenerator() {
                 const response = await axios.post('{{ route("admin.attendance.generate") }}', { type });
                 this.qrData = response.data;
             } catch (error) {
-                alert('Gagal generate QR Code');
+                showToast('Gagal generate QR Code', 'error');
             }
             
             this.loading = false;

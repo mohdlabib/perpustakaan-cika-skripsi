@@ -302,6 +302,271 @@
         </main>
     </div>
     
+    <!-- Global Confirm Modal -->
+    <div x-data="confirmModal()" x-cloak>
+        <div x-show="isOpen" 
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4"
+             @click.self="cancel()">
+            <div x-show="isOpen"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+                <div class="p-6 text-center">
+                    <div :class="iconColor" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4">
+                        <template x-if="type === 'danger'">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </template>
+                        <template x-if="type === 'warning'">
+                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </template>
+                        <template x-if="type === 'info'">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </template>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2" x-text="title"></h3>
+                    <p class="text-gray-600 text-sm" x-text="message"></p>
+                </div>
+                <div class="flex border-t border-gray-100">
+                    <button @click="cancel()" class="flex-1 px-4 py-3 text-gray-600 font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button @click="confirm()" :class="confirmBtnClass" class="flex-1 px-4 py-3 font-medium transition cursor-pointer border-l border-gray-100">
+                        <span x-text="confirmText"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Toast Notification -->
+    <div x-data="toastNotification()" x-cloak
+         class="fixed top-4 right-4 z-[101] space-y-2">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.show"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-x-8"
+                 x-transition:enter-end="opacity-100 translate-x-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-x-0"
+                 x-transition:leave-end="opacity-0 translate-x-8"
+                 :class="toast.bgClass"
+                 class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg min-w-[280px] max-w-sm">
+                <div :class="toast.iconBgClass" class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+                    <template x-if="toast.type === 'success'">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </template>
+                    <template x-if="toast.type === 'error'">
+                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </template>
+                    <template x-if="toast.type === 'warning'">
+                        <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </template>
+                    <template x-if="toast.type === 'info'">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </template>
+                </div>
+                <p class="text-sm font-medium flex-1" :class="toast.textClass" x-text="toast.message"></p>
+                <button @click="removeToast(toast.id)" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </template>
+    </div>
+    
+    <script>
+    // Global Confirm Modal
+    function confirmModal() {
+        return {
+            isOpen: false,
+            type: 'danger',
+            title: '',
+            message: '',
+            confirmText: 'Hapus',
+            onConfirm: null,
+            
+            get iconColor() {
+                const colors = {
+                    danger: 'bg-red-100',
+                    warning: 'bg-yellow-100',
+                    info: 'bg-blue-100'
+                };
+                return colors[this.type] || colors.danger;
+            },
+            
+            get confirmBtnClass() {
+                const classes = {
+                    danger: 'text-red-600 hover:bg-red-50',
+                    warning: 'text-yellow-600 hover:bg-yellow-50',
+                    info: 'text-blue-600 hover:bg-blue-50'
+                };
+                return classes[this.type] || classes.danger;
+            },
+            
+            open(options) {
+                this.type = options.type || 'danger';
+                this.title = options.title || 'Konfirmasi';
+                this.message = options.message || 'Apakah Anda yakin?';
+                this.confirmText = options.confirmText || 'Ya, Lanjutkan';
+                this.onConfirm = options.onConfirm || null;
+                this.isOpen = true;
+            },
+            
+            confirm() {
+                if (this.onConfirm) this.onConfirm();
+                this.isOpen = false;
+            },
+            
+            cancel() {
+                this.isOpen = false;
+            }
+        }
+    }
+    
+    // Global Toast Notification
+    function toastNotification() {
+        return {
+            toasts: [],
+            
+            show(message, type = 'info') {
+                const id = Date.now();
+                const toast = {
+                    id,
+                    message,
+                    type,
+                    show: true,
+                    bgClass: this.getBgClass(type),
+                    iconBgClass: this.getIconBgClass(type),
+                    textClass: this.getTextClass(type)
+                };
+                this.toasts.push(toast);
+                
+                setTimeout(() => this.removeToast(id), 4000);
+            },
+            
+            getBgClass(type) {
+                const classes = {
+                    success: 'bg-green-50 border border-green-200',
+                    error: 'bg-red-50 border border-red-200',
+                    warning: 'bg-yellow-50 border border-yellow-200',
+                    info: 'bg-blue-50 border border-blue-200'
+                };
+                return classes[type] || classes.info;
+            },
+            
+            getIconBgClass(type) {
+                const classes = {
+                    success: 'bg-green-100',
+                    error: 'bg-red-100',
+                    warning: 'bg-yellow-100',
+                    info: 'bg-blue-100'
+                };
+                return classes[type] || classes.info;
+            },
+            
+            getTextClass(type) {
+                const classes = {
+                    success: 'text-green-800',
+                    error: 'text-red-800',
+                    warning: 'text-yellow-800',
+                    info: 'text-blue-800'
+                };
+                return classes[type] || classes.info;
+            },
+            
+            removeToast(id) {
+                const index = this.toasts.findIndex(t => t.id === id);
+                if (index > -1) {
+                    this.toasts[index].show = false;
+                    setTimeout(() => {
+                        this.toasts = this.toasts.filter(t => t.id !== id);
+                    }, 200);
+                }
+            }
+        }
+    }
+    
+    // Global helper functions
+    window.showConfirm = function(options) {
+        const modal = document.querySelector('[x-data="confirmModal()"]');
+        if (modal && modal.__x) {
+            modal.__x.$data.open(options);
+        }
+    };
+    
+    window.showToast = function(message, type = 'info') {
+        const toast = document.querySelector('[x-data="toastNotification()"]');
+        if (toast && toast.__x) {
+            toast.__x.$data.show(message, type);
+        }
+    };
+    
+    // Delete confirmation helper
+    window.confirmDelete = function(form, itemName = 'item ini') {
+        showConfirm({
+            type: 'danger',
+            title: 'Hapus Data',
+            message: `Apakah Anda yakin ingin menghapus ${itemName}? Tindakan ini tidak dapat dibatalkan.`,
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => form.submit()
+        });
+        return false;
+    };
+    
+    // Reject confirmation helper
+    window.confirmReject = function(form) {
+        showConfirm({
+            type: 'warning',
+            title: 'Tolak Peminjaman',
+            message: 'Apakah Anda yakin ingin menolak peminjaman ini?',
+            confirmText: 'Ya, Tolak',
+            onConfirm: () => form.submit()
+        });
+        return false;
+    };
+    
+    // Delete grade confirmation helper
+    window.confirmDeleteGrade = function(form, gradeName, studentsCount) {
+        const warningMsg = studentsCount > 0 
+            ? `PERINGATAN: Ini akan MENGHAPUS ${studentsCount} SISWA yang terdaftar pada angkatan ini!` 
+            : 'Tidak ada siswa yang terdaftar pada angkatan ini.';
+        
+        showConfirm({
+            type: 'danger',
+            title: 'Hapus Angkatan',
+            message: `Anda akan menghapus angkatan ${gradeName}. ${warningMsg}`,
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => form.submit()
+        });
+        return false;
+    };
+    </script>
+    
     @stack('scripts')
 </body>
 </html>

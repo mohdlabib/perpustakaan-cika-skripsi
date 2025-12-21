@@ -406,7 +406,7 @@ function previewCover(input) {
         
         // Validate file size (2MB max)
         if (file.size > 2 * 1024 * 1024) {
-            alert('Ukuran file terlalu besar. Maksimal 2MB.');
+            showToast('Ukuran file terlalu besar. Maksimal 2MB.', 'error');
             input.value = '';
             preview.classList.add('hidden');
             return;
@@ -415,7 +415,7 @@ function previewCover(input) {
         // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         if (!validTypes.includes(file.type)) {
-            alert('Format file tidak valid. Gunakan JPG atau PNG.');
+            showToast('Format file tidak valid. Gunakan JPG atau PNG.', 'error');
             input.value = '';
             preview.classList.add('hidden');
             return;

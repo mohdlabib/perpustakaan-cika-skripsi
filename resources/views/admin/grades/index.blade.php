@@ -53,7 +53,7 @@
                                 </svg>
                             </a>
                             <form action="{{ route('admin.grades.destroy', $grade) }}" method="POST" 
-                                onsubmit="return confirm('⚠️ PERINGATAN!\n\nAnda akan menghapus angkatan {{ $grade->name }}.\n\n{{ $grade->students_count > 0 ? 'Ini akan MENGHAPUS ' . $grade->students_count . ' SISWA yang terdaftar pada angkatan ini!' : 'Tidak ada siswa yang terdaftar pada angkatan ini.' }}\n\nApakah Anda yakin ingin melanjutkan?')">
+                                onsubmit="return confirmDeleteGrade(this, '{{ $grade->name }}', {{ $grade->students_count }})">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer">

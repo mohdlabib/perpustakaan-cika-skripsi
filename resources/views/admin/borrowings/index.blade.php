@@ -228,7 +228,7 @@
                                     </svg>
                                     Setujui
                                 </button>
-                                <form action="{{ route('admin.borrowings.reject', $borrowing) }}" method="POST" onsubmit="return confirm('Tolak peminjaman ini?')">
+                                <form action="{{ route('admin.borrowings.reject', $borrowing) }}" method="POST" onsubmit="return confirmReject(this)">
                                     @csrf
                                     @method('PUT')
                                     <button type="submit" class="px-3 py-2 bg-red-500 text-white text-sm rounded-lg font-medium hover:bg-red-600 transition flex items-center gap-1 cursor-pointer shadow-sm">
