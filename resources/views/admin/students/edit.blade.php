@@ -56,8 +56,10 @@
             </div>
             
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Angkatan</label>
-                <select name="grade_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition cursor-pointer">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Angkatan <span class="text-red-500">*</span>
+                </label>
+                <select name="grade_id" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition cursor-pointer">
                     <option value="">Pilih Angkatan</option>
                     @foreach($grades as $grade)
                         <option value="{{ $grade->id }}" {{ old('grade_id', $student->grade_id ?? '') == $grade->id ? 'selected' : '' }}>

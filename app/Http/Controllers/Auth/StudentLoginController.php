@@ -25,11 +25,25 @@ class StudentLoginController extends Controller
             'nis' => 'required|string|max:20',
         ]);
 
-        $student = Student::find($request->nis);
+        $student = Student::with('grade')->find($request->nis);
 
         if (!$student) {
             return back()->withErrors([
                 'nis' => 'NIS tidak ditemukan dalam sistem.',
+            ])->withInput();
+        }
+
+        // Check if student has a grade assigned
+        if (!$student->grade) {
+            return back()->withErrors([
+                'nis' => 'Akun siswa belum memiliki angkatan. Hubungi admin.',
+            ])->withInput();
+        }
+
+        // Check if grade is active
+        if (!$student->grade->is_active) {
+            return back()->withErrors([
+                'nis' => 'Angkatan Anda (' . $student->grade->name . ') sudah tidak aktif. Hubungi admin jika ada kesalahan.',
             ])->withInput();
         }
 
@@ -52,3 +66,4 @@ class StudentLoginController extends Controller
             ->with('success', 'Berhasil keluar.');
     }
 }
+

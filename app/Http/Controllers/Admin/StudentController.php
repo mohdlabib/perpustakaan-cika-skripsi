@@ -44,7 +44,7 @@ class StudentController extends Controller
             'nis' => 'required|string|max:20|unique:students_registry,nis',
             'name' => 'required|string|max:100',
             'class' => 'nullable|string|max:20',
-            'grade_id' => 'nullable|exists:grades,id',
+            'grade_id' => 'required|exists:grades,id',
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:6',
         ]);
@@ -72,7 +72,7 @@ class StudentController extends Controller
         $request->validate([
             'name' => 'required|string|max:100',
             'class' => 'nullable|string|max:20',
-            'grade_id' => 'nullable|exists:grades,id',
+            'grade_id' => 'required|exists:grades,id',
             'phone' => 'nullable|string|max:20',
             'password' => 'nullable|string|min:6',
         ]);

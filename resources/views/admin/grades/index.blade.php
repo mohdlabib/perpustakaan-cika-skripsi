@@ -24,7 +24,6 @@
             <thead class="bg-gray-50">
                 <tr class="text-left text-gray-600 text-sm">
                     <th class="px-6 py-4 font-semibold">Nama Angkatan</th>
-                    <th class="px-6 py-4 font-semibold">Tingkat</th>
                     <th class="px-6 py-4 font-semibold">Tahun Ajaran</th>
                     <th class="px-6 py-4 font-semibold">Jumlah Siswa</th>
                     <th class="px-6 py-4 font-semibold">Status</th>
@@ -35,7 +34,6 @@
                 @forelse($grades as $grade)
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ $grade->name }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $grade->level ?? '-' }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $grade->academic_year ?? '-' }}</td>
                     <td class="px-6 py-4">
                         <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg">{{ $grade->students_count }} siswa</span>
@@ -54,7 +52,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </a>
-                            <form action="{{ route('admin.grades.destroy', $grade) }}" method="POST" onsubmit="return confirm('Hapus angkatan ini?')">
+                            <form action="{{ route('admin.grades.destroy', $grade) }}" method="POST" 
+                                onsubmit="return confirm('⚠️ PERINGATAN!\n\nAnda akan menghapus angkatan {{ $grade->name }}.\n\n{{ $grade->students_count > 0 ? 'Ini akan MENGHAPUS ' . $grade->students_count . ' SISWA yang terdaftar pada angkatan ini!' : 'Tidak ada siswa yang terdaftar pada angkatan ini.' }}\n\nApakah Anda yakin ingin melanjutkan?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer">
@@ -68,7 +67,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-16 text-center">
+                    <td colspan="5" class="px-6 py-16 text-center">
                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>

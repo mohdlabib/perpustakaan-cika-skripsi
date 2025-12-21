@@ -39,27 +39,15 @@
                 </label>
                 <input type="text" name="name" value="{{ old('name', $grade->name ?? '') }}" required
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                    placeholder="Contoh: 2024/2025 atau Kelas XII">
+                    placeholder="Contoh: 2024 atau Angkatan 2024">
                 @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
             
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tingkat</label>
-                    <select name="level" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark cursor-pointer">
-                        <option value="">Pilih Tingkat</option>
-                        <option value="X" {{ old('level', $grade->level ?? '') == 'X' ? 'selected' : '' }}>Kelas X</option>
-                        <option value="XI" {{ old('level', $grade->level ?? '') == 'XI' ? 'selected' : '' }}>Kelas XI</option>
-                        <option value="XII" {{ old('level', $grade->level ?? '') == 'XII' ? 'selected' : '' }}>Kelas XII</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Ajaran</label>
-                    <input type="number" name="academic_year" value="{{ old('academic_year', $grade->academic_year ?? date('Y')) }}" min="2000" max="2100"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                        placeholder="{{ date('Y') }}">
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tahun Ajaran</label>
+                <input type="number" name="academic_year" value="{{ old('academic_year', $grade->academic_year ?? date('Y')) }}" min="2000" max="2100"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                    placeholder="{{ date('Y') }}">
             </div>
             
             <div class="flex items-center gap-3">
