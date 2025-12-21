@@ -49,8 +49,13 @@ class BorrowingController extends Controller
      */
     public function create()
     {
-        $students = Student::orderBy('name')->get();
-        $books = Book::available()->orderBy('title')->get();
+        $students = Student::orderBy('name')->get()->map(function($s) {
+            return ['nis' => $s->nis, 'name' => $s->name, 'class' => $s->class];
+        })->values();
+        
+        $books = Book::available()->orderBy('title')->get()->map(function($b) {
+            return ['id' => $b->id, 'title' => $b->title, 'author' => $b->author, 'available_stock' => $b->available_stock];
+        })->values();
         
         return view('admin.borrowings.create', compact('students', 'books'));
     }

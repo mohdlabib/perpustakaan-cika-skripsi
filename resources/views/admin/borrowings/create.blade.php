@@ -249,7 +249,7 @@
 <script>
 function studentSelector() {
     return {
-        items: @json($students->map(function($s) { return ['nis' => $s->nis, 'name' => $s->name, 'class' => $s->class]; })->values()),
+        items: @json($students),
         search: '',
         showDropdown: false,
         selectedId: '{{ old('student_nis') }}',
@@ -296,7 +296,7 @@ function studentSelector() {
 
 function bookSelector() {
     return {
-        items: @json($books->map(function($b) { return ['id' => $b->id, 'title' => $b->title, 'author' => $b->author, 'available_stock' => $b->available_stock]; })->values()),
+        items: @json($books),
         search: '',
         showDropdown: false,
         selectedId: '{{ old('book_id') }}',
