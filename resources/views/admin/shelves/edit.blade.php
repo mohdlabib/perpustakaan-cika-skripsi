@@ -55,20 +55,11 @@
                 </div>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
-                    <input type="text" name="location" value="{{ old('location', $shelf->location ?? '') }}"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                        placeholder="Contoh: Lantai 1">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Kapasitas</label>
-                    <input type="number" name="capacity" value="{{ old('capacity', $shelf->capacity ?? '') }}" min="1"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                        placeholder="Jumlah buku">
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi</label>
+                <input type="text" name="location" value="{{ old('location', $shelf->location ?? '') }}"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                    placeholder="Contoh: Lantai 1">
             </div>
             
             <div>
@@ -77,14 +68,7 @@
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
                     placeholder="Deskripsi rak (opsional)">{{ old('description', $shelf->description ?? '') }}</textarea>
             </div>
-            
-            <div class="flex items-center gap-3">
-                <input type="checkbox" name="is_active" value="1" id="is_active" 
-                    {{ old('is_active', $shelf->is_active ?? true) ? 'checked' : '' }}
-                    class="w-5 h-5 text-primary-dark rounded cursor-pointer">
-                <label for="is_active" class="text-gray-700 cursor-pointer">Status Aktif</label>
-            </div>
-            
+
             <div class="flex gap-4 pt-4 border-t border-gray-100">
                 <button type="submit" class="px-8 py-3 bg-primary-dark text-white rounded-xl font-semibold hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
