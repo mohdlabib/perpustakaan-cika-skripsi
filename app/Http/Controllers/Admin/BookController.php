@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Shelf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -31,7 +32,8 @@ class BookController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.books.create', compact('categories'));
+        $shelves = Shelf::active()->orderBy('code')->get();
+        return view('admin.books.create', compact('categories', 'shelves'));
     }
 
     public function store(Request $request)
@@ -51,6 +53,7 @@ class BookController extends Controller
             'classification' => 'nullable|string|max:100',
             'call_number' => 'nullable|string|max:100',
             'inventory_code' => 'nullable|string|max:100',
+            'shelf_id' => 'nullable|exists:shelves,id',
             'shelf_location' => 'nullable|string|max:50',
             'received_date' => 'nullable|date',
             'price' => 'nullable|numeric|min:0',
@@ -71,7 +74,8 @@ class BookController extends Controller
     public function edit(Book $book)
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.books.edit', compact('book', 'categories'));
+        $shelves = Shelf::active()->orderBy('code')->get();
+        return view('admin.books.edit', compact('book', 'categories', 'shelves'));
     }
 
     public function update(Request $request, Book $book)
@@ -91,6 +95,7 @@ class BookController extends Controller
             'classification' => 'nullable|string|max:100',
             'call_number' => 'nullable|string|max:100',
             'inventory_code' => 'nullable|string|max:100',
+            'shelf_id' => 'nullable|exists:shelves,id',
             'shelf_location' => 'nullable|string|max:50',
             'received_date' => 'nullable|date',
             'price' => 'nullable|numeric|min:0',
@@ -129,7 +134,7 @@ class BookController extends Controller
      */
     public function detail(Book $book)
     {
-        $book->load('category');
+        $book->load(['category', 'shelf']);
         
         return response()->json([
             'id' => $book->id,
@@ -146,7 +151,13 @@ class BookController extends Controller
             'classification' => $book->classification,
             'call_number' => $book->call_number,
             'inventory_code' => $book->inventory_code,
-            'shelf_location' => $book->shelf_location,
+            'shelf_location' => $book->shelf ? ($book->shelf->code . ' - ' . $book->shelf->name) : $book->shelf_location,
+            'shelf' => $book->shelf ? [
+                'id' => $book->shelf->id,
+                'code' => $book->shelf->code,
+                'name' => $book->shelf->name,
+                'location' => $book->shelf->location,
+            ] : null,
             'received_date' => $book->received_date ? $book->received_date->format('d M Y') : null,
             'price' => $book->price,
             'stock' => $book->stock,

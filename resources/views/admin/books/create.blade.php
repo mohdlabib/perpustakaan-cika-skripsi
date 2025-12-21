@@ -117,12 +117,80 @@
                             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
                             placeholder="Call number">
                     </div>
+                </div>
+                
+                <!-- Rak Penyimpanan - Full Width dengan Searchable Dropdown -->
+                <div class="mt-6" x-data="shelfSelector()">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <svg class="w-4 h-4 inline mr-1 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                        </svg>
+                        Rak Penyimpanan
+                    </label>
+                    <div class="relative">
+                        <input type="hidden" name="shelf_id" x-model="selectedId">
+                        <div class="relative">
+                            <input type="text" 
+                                x-model="search"
+                                @focus="showDropdown = true"
+                                @click.away="showDropdown = false"
+                                @keydown.escape="showDropdown = false"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition pr-10"
+                                placeholder="Cari atau pilih rak...">
+                            <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Dropdown -->
+                        <div x-show="showDropdown && filteredShelves.length > 0" x-cloak
+                            class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                            <template x-for="shelf in filteredShelves" :key="shelf.id">
+                                <div @click="selectShelf(shelf)" 
+                                    class="px-4 py-3 hover:bg-primary-light cursor-pointer transition border-b border-gray-50 last:border-b-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <span class="font-semibold text-gray-800" x-text="shelf.code"></span>
+                                            <span class="text-gray-600" x-text="' - ' + shelf.name"></span>
+                                            <p class="text-xs text-gray-400" x-text="shelf.location || 'Lokasi tidak ditentukan'"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        
+                        <!-- No results -->
+                        <div x-show="showDropdown && search.length > 0 && filteredShelves.length === 0" x-cloak
+                            class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 text-center text-gray-500">
+                            Tidak ada rak yang ditemukan
+                        </div>
+                    </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi Rak</label>
-                        <input type="text" name="shelf_location" value="{{ old('shelf_location', $book->shelf_location ?? '') }}"
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
-                            placeholder="Contoh: A-01">
+                    <!-- Selected Shelf Display -->
+                    <div x-show="selectedId" class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-medium text-yellow-800" x-text="selectedName"></p>
+                                <p class="text-xs text-yellow-600" x-text="selectedLocation"></p>
+                            </div>
+                        </div>
+                        <button type="button" @click="clearSelection()" class="text-yellow-600 hover:text-yellow-800 transition cursor-pointer">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -235,6 +303,53 @@
 
 @push('scripts')
 <script>
+function shelfSelector() {
+    return {
+        shelves: @json($shelves ?? []),
+        search: '',
+        showDropdown: false,
+        selectedId: '{{ old('shelf_id', $book->shelf_id ?? '') }}',
+        selectedName: '',
+        selectedLocation: '',
+        
+        init() {
+            if (this.selectedId) {
+                const shelf = this.shelves.find(s => s.id == this.selectedId);
+                if (shelf) {
+                    this.selectedName = `${shelf.code} - ${shelf.name}`;
+                    this.selectedLocation = shelf.location || 'Lokasi tidak ditentukan';
+                    this.search = this.selectedName;
+                }
+            }
+        },
+        
+        get filteredShelves() {
+            if (!this.search) return this.shelves;
+            const query = this.search.toLowerCase();
+            return this.shelves.filter(shelf => 
+                shelf.code.toLowerCase().includes(query) ||
+                shelf.name.toLowerCase().includes(query) ||
+                (shelf.location && shelf.location.toLowerCase().includes(query))
+            );
+        },
+        
+        selectShelf(shelf) {
+            this.selectedId = shelf.id;
+            this.selectedName = `${shelf.code} - ${shelf.name}`;
+            this.selectedLocation = shelf.location || 'Lokasi tidak ditentukan';
+            this.search = this.selectedName;
+            this.showDropdown = false;
+        },
+        
+        clearSelection() {
+            this.selectedId = '';
+            this.selectedName = '';
+            this.selectedLocation = '';
+            this.search = '';
+        }
+    }
+}
+
 function previewCover(input) {
     const preview = document.getElementById('cover-preview');
     const previewImg = document.getElementById('cover-preview-img');
@@ -272,3 +387,4 @@ function previewCover(input) {
 </script>
 @endpush
 @endsection
+

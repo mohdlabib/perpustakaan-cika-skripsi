@@ -16,6 +16,7 @@ class Book extends Model
         'author',
         'edition',
         'category_id',
+        'shelf_id',
         'publisher',
         'publication_year',
         'publication_place',
@@ -43,6 +44,11 @@ class Book extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function shelf()
+    {
+        return $this->belongsTo(Shelf::class);
     }
 
     public function borrowings()
