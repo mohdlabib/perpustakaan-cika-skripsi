@@ -13,9 +13,9 @@
         </ol>
     </nav>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
         <!-- Header -->
-        <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white">
+        <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-t-2xl">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
