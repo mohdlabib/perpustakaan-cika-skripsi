@@ -30,11 +30,15 @@ class BorrowingController extends Controller
         $student = Student::find($nis);
         $book = Book::findOrFail($request->book_id);
 
-        // Check if student can borrow more books
-        if (!$student->canBorrow()) {
+        // Check if student can borrow more books (including pending requests)
+        $activeCount = Borrowing::where('student_nis', $nis)
+            ->whereIn('status', ['borrowed', 'pending'])
+            ->count();
+        
+        if ($activeCount >= 3) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah meminjam maksimal 3 buku. Kembalikan buku terlebih dahulu.',
+                'message' => 'Anda sudah memiliki 3 peminjaman aktif atau menunggu approval.',
             ], 400);
         }
 
@@ -46,35 +50,35 @@ class BorrowingController extends Controller
             ], 400);
         }
 
-        // Check if student already borrowed this book
-        $alreadyBorrowed = Borrowing::where('student_nis', $nis)
+        // Check if student already has pending or borrowed this book
+        $alreadyRequested = Borrowing::where('student_nis', $nis)
             ->where('book_id', $book->id)
-            ->where('status', 'borrowed')
+            ->whereIn('status', ['borrowed', 'pending'])
             ->exists();
 
-        if ($alreadyBorrowed) {
+        if ($alreadyRequested) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah meminjam buku ini.',
+                'message' => 'Anda sudah meminjam atau mengajukan peminjaman buku ini.',
             ], 400);
         }
 
-        // Create borrowing record
+        // Create borrowing request with pending status
         $borrowing = Borrowing::create([
             'student_nis' => $nis,
             'book_id' => $book->id,
-            'borrow_date' => now(),
-            'due_date' => now()->addDays(7), // 1 week loan period
-            'status' => 'borrowed',
+            'borrow_date' => null, // Will be set when approved
+            'due_date' => null, // Will be set by admin
+            'status' => 'pending',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => "Berhasil meminjam buku '{$book->title}'. Harap kembalikan sebelum {$borrowing->due_date->format('d M Y')}.",
+            'message' => "Permintaan peminjaman buku '{$book->title}' berhasil diajukan. Menunggu persetujuan admin.",
             'borrowing' => [
                 'id' => $borrowing->id,
                 'book_title' => $book->title,
-                'due_date' => $borrowing->due_date->format('d M Y'),
+                'status' => 'pending',
             ],
         ]);
     }

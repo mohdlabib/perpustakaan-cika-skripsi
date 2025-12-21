@@ -15,12 +15,16 @@ class Borrowing extends Model
         'return_date',
         'status',
         'notes',
+        'approved_at',
+        'approved_by',
+        'rejected_reason',
     ];
 
     protected $casts = [
         'borrow_date' => 'date',
         'due_date' => 'date',
         'return_date' => 'date',
+        'approved_at' => 'datetime',
     ];
 
     /**
@@ -40,11 +44,19 @@ class Borrowing extends Model
     }
 
     /**
+     * Get the admin who approved/rejected.
+     */
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
      * Check if this borrowing is overdue.
      */
     public function getIsOverdueAttribute(): bool
     {
-        return $this->status === 'borrowed' && $this->due_date->isPast();
+        return $this->status === 'borrowed' && $this->due_date && $this->due_date->isPast();
     }
 
     /**
@@ -52,10 +64,18 @@ class Borrowing extends Model
      */
     public function getDaysRemainingAttribute(): int
     {
-        if ($this->status !== 'borrowed') {
+        if ($this->status !== 'borrowed' || !$this->due_date) {
             return 0;
         }
         return now()->diffInDays($this->due_date, false);
+    }
+
+    /**
+     * Scope for pending approval.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
     }
 
     /**
@@ -75,12 +95,47 @@ class Borrowing extends Model
     }
 
     /**
+     * Scope for rejected borrowings.
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    /**
      * Scope for overdue borrowings.
      */
     public function scopeOverdue($query)
     {
         return $query->where('status', 'borrowed')
                      ->where('due_date', '<', now());
+    }
+
+    /**
+     * Approve the borrowing request.
+     */
+    public function approve($dueDate, $adminId): void
+    {
+        $this->update([
+            'status' => 'borrowed',
+            'borrow_date' => now(),
+            'due_date' => $dueDate,
+            'approved_at' => now(),
+            'approved_by' => $adminId,
+        ]);
+    }
+
+    /**
+     * Reject the borrowing request.
+     */
+    public function reject($reason, $adminId): void
+    {
+        $this->update([
+            'status' => 'rejected',
+            'approved_at' => now(),
+            'approved_by' => $adminId,
+            'rejected_reason' => $reason,
+        ]);
     }
 
     /**
@@ -94,3 +149,4 @@ class Borrowing extends Model
         ]);
     }
 }
+

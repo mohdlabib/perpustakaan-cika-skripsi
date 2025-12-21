@@ -4,7 +4,20 @@
 
 @section('content')
 <!-- Stats Cards - Same style as Dashboard -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm {{ \App\Models\Borrowing::pending()->count() > 0 ? 'border-yellow-200 bg-yellow-50' : '' }}">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'bg-yellow-100' : 'bg-yellow-50' }} rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-yellow-600' : 'text-yellow-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-2xl font-bold {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-yellow-600' : 'text-gray-800' }}">{{ \App\Models\Borrowing::pending()->count() }}</div>
+                <div class="text-gray-500 text-sm">Menunggu</div>
+            </div>
+        </div>
+    </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
         <div class="flex items-center gap-4">
             <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -14,7 +27,7 @@
             </div>
             <div>
                 <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Borrowing::count() }}</div>
-                <div class="text-gray-500 text-sm">Total Peminjaman</div>
+                <div class="text-gray-500 text-sm">Total</div>
             </div>
         </div>
     </div>
@@ -27,7 +40,7 @@
             </div>
             <div>
                 <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Borrowing::active()->count() }}</div>
-                <div class="text-gray-500 text-sm">Sedang Dipinjam</div>
+                <div class="text-gray-500 text-sm">Dipinjam</div>
             </div>
         </div>
     </div>
@@ -116,8 +129,10 @@
         </div>
         <select name="status" class="px-4 py-3 border border-gray-200 rounded-xl cursor-pointer">
             <option value="">Semua Status</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Approval</option>
             <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
             <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
+            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
             <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Terlambat</option>
         </select>
         <button type="submit" class="px-6 py-3 bg-gray-800 text-white rounded-xl font-medium hover:bg-gray-900 transition cursor-pointer">
@@ -159,18 +174,32 @@
                         <p class="text-gray-400 text-sm">{{ $borrowing->book->author ?? '' }}</p>
                     </td>
                     <td class="px-6 py-4 text-gray-600">
-                        {{ $borrowing->borrow_date->format('d M Y') }}
+                        {{ $borrowing->borrow_date ? $borrowing->borrow_date->format('d M Y') : '-' }}
                     </td>
                     <td class="px-6 py-4 {{ $borrowing->is_overdue ? 'text-red-600 font-medium' : 'text-gray-600' }}">
-                        {{ $borrowing->due_date->format('d M Y') }}
+                        {{ $borrowing->due_date ? $borrowing->due_date->format('d M Y') : '-' }}
                     </td>
                     <td class="px-6 py-4">
-                        @if($borrowing->status === 'returned')
+                        @if($borrowing->status === 'pending')
+                            <span class="px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-lg inline-flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Menunggu
+                            </span>
+                        @elseif($borrowing->status === 'returned')
                             <span class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
                                 Dikembalikan
+                            </span>
+                        @elseif($borrowing->status === 'rejected')
+                            <span class="px-3 py-1.5 bg-red-100 text-red-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Ditolak
                             </span>
                         @elseif($borrowing->is_overdue)
                             <span class="px-3 py-1.5 bg-red-100 text-red-600 text-xs font-medium rounded-lg inline-flex items-center gap-1">
@@ -190,11 +219,30 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-end gap-2">
-                            @if($borrowing->status === 'borrowed')
+                            @if($borrowing->status === 'pending')
+                                <!-- Approve Modal Trigger -->
+                                <button type="button" onclick="openApproveModal({{ $borrowing->id }}, '{{ $borrowing->student->name ?? '' }}', '{{ $borrowing->book->title ?? '' }}')" 
+                                    class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700 transition flex items-center gap-1 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Setujui
+                                </button>
+                                <form action="{{ route('admin.borrowings.reject', $borrowing) }}" method="POST" onsubmit="return confirm('Tolak peminjaman ini?')">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="px-3 py-2 bg-red-600 text-white text-sm rounded-lg font-medium hover:bg-red-700 transition flex items-center gap-1 cursor-pointer">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        Tolak
+                                    </button>
+                                </form>
+                            @elseif($borrowing->status === 'borrowed')
                                 <form action="{{ route('admin.borrowings.return', $borrowing) }}" method="POST">
                                     @csrf
                                     @method('PUT')
-                                    <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-1">
+                                    <button type="submit" class="px-3 py-2 bg-green-600 text-white text-sm rounded-lg font-medium hover:bg-green-700 transition flex items-center gap-1 cursor-pointer">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
@@ -202,7 +250,7 @@
                                     </button>
                                 </form>
                             @else
-                                <span class="text-gray-400 text-sm">Selesai</span>
+                                <span class="text-gray-400 text-sm">-</span>
                             @endif
                         </div>
                     </td>
@@ -266,5 +314,71 @@ function searchRecommendation() {
 }
 </script>
 @endpush
+
+<!-- Approve Modal -->
+<div id="approveModal" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 py-6">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-all" onclick="closeApproveModal()"></div>
+        
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-green-600 p-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Setujui Peminjaman</h3>
+                        <p class="text-white/70 text-sm">Tentukan tanggal pengembalian</p>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="approveForm" method="POST" class="p-6 space-y-4">
+                @csrf
+                @method('PUT')
+                
+                <div class="text-sm text-gray-600 bg-gray-50 rounded-xl p-4">
+                    <p><strong>Siswa:</strong> <span id="approveStudentName">-</span></p>
+                    <p><strong>Buku:</strong> <span id="approveBookTitle">-</span></p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Batas Pengembalian <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="due_date" id="approveDueDate" required
+                        min="{{ now()->addDay()->format('Y-m-d') }}"
+                        value="{{ now()->addDays(7)->format('Y-m-d') }}"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                </div>
+                
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeApproveModal()" class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition cursor-pointer">
+                        Setujui Peminjaman
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openApproveModal(id, studentName, bookTitle) {
+    document.getElementById('approveForm').action = '/admin/borrowings/' + id + '/approve';
+    document.getElementById('approveStudentName').textContent = studentName;
+    document.getElementById('approveBookTitle').textContent = bookTitle;
+    document.getElementById('approveModal').classList.remove('hidden');
+}
+
+function closeApproveModal() {
+    document.getElementById('approveModal').classList.add('hidden');
+}
+</script>
 @endsection
+
 

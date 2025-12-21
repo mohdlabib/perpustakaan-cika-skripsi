@@ -13,6 +13,19 @@ class SettingsController extends Controller
         return view('admin.settings.index');
     }
 
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        auth()->user()->update([
+            'name' => $request->name,
+        ]);
+
+        return back()->with('success', 'Nama berhasil diperbarui.');
+    }
+
     public function updatePassword(Request $request)
     {
         $request->validate([
@@ -33,3 +46,4 @@ class SettingsController extends Controller
         return back()->with('success', 'Password berhasil diperbarui.');
     }
 }
+

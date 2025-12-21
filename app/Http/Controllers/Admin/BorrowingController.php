@@ -92,6 +92,44 @@ class BorrowingController extends Controller
     }
 
     /**
+     * Approve borrowing request.
+     */
+    public function approve(Request $request, Borrowing $borrowing)
+    {
+        $request->validate([
+            'due_date' => 'required|date|after:today',
+        ]);
+
+        if ($borrowing->status !== 'pending') {
+            return back()->with('error', 'Peminjaman ini sudah diproses sebelumnya.');
+        }
+
+        $borrowing->approve($request->due_date, auth()->id());
+
+        return redirect()->route('admin.borrowings.index')
+            ->with('success', "Peminjaman oleh {$borrowing->student->name} berhasil disetujui.");
+    }
+
+    /**
+     * Reject borrowing request.
+     */
+    public function reject(Request $request, Borrowing $borrowing)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        if ($borrowing->status !== 'pending') {
+            return back()->with('error', 'Peminjaman ini sudah diproses sebelumnya.');
+        }
+
+        $borrowing->reject($request->reason, auth()->id());
+
+        return redirect()->route('admin.borrowings.index')
+            ->with('success', "Peminjaman oleh {$borrowing->student->name} ditolak.");
+    }
+
+    /**
      * Mark borrowing as returned.
      */
     public function returnBook(Borrowing $borrowing)

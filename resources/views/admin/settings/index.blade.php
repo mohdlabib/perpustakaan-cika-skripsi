@@ -29,16 +29,23 @@
                     </svg>
                     Informasi Akun
                 </h3>
-                <div class="grid md:grid-cols-2 gap-4">
+                <form action="{{ route('admin.settings.profile') }}" method="POST" class="space-y-4">
+                    @csrf
                     <div>
-                        <p class="text-sm text-gray-500">Nama</p>
-                        <p class="font-medium text-gray-800">{{ auth()->user()->name }}</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                        <input type="text" name="name" value="{{ auth()->user()->name }}" required
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition">
+                        @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <p class="text-sm text-gray-500">Email</p>
-                        <p class="font-medium text-gray-800">{{ auth()->user()->email }}</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" value="{{ auth()->user()->email }}" disabled
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-500 cursor-not-allowed">
                     </div>
-                </div>
+                    <button type="submit" class="px-6 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition cursor-pointer text-sm">
+                        Simpan Nama
+                    </button>
+                </form>
             </div>
             
             <!-- Change Password -->
