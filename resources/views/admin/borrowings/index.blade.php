@@ -129,7 +129,7 @@
         </div>
         <select name="status" class="px-4 py-3 border border-gray-200 rounded-xl cursor-pointer">
             <option value="">Semua Status</option>
-            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Approval</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu Disetujui</option>
             <option value="borrowed" {{ request('status') == 'borrowed' ? 'selected' : '' }}>Dipinjam</option>
             <option value="returned" {{ request('status') == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Ditolak</option>
@@ -346,12 +346,12 @@ function searchRecommendation() {
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Tanggal Batas Pengembalian <span class="text-red-500">*</span>
+                        Tanggal Batas Pengembalian
                     </label>
-                    <input type="date" name="due_date" id="approveDueDate" required
-                        min="{{ now()->addDay()->format('Y-m-d') }}"
+                    <input type="date" name="due_date" id="approveDueDate" required readonly
                         value="{{ now()->addDays(7)->format('Y-m-d') }}"
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition">
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600 cursor-not-allowed">
+                    <p class="text-xs text-gray-500 mt-1">Otomatis 7 hari dari hari ini</p>
                 </div>
                 
                 <div class="flex gap-3 pt-2">

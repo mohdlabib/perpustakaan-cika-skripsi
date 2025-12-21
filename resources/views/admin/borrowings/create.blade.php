@@ -62,10 +62,10 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                        class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
                         <template x-for="item in filteredItems" :key="item.nis">
                             <div @click="selectItem(item)" 
-                                class="px-4 py-3 hover:bg-primary-light cursor-pointer transition border-b border-gray-50 last:border-b-0">
+                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@
                     
                     <!-- No results -->
                     <div x-show="showDropdown && search.length > 0 && filteredItems.length === 0" x-cloak
-                        class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 text-center text-gray-500">
+                        class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-4 text-center text-gray-500">
                         Tidak ada siswa yang ditemukan
                     </div>
                 </div>
@@ -141,10 +141,10 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                        class="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-64 overflow-y-auto">
                         <template x-for="item in filteredItems" :key="item.id">
                             <div @click="selectItem(item)" 
-                                class="px-4 py-3 hover:bg-primary-light cursor-pointer transition border-b border-gray-50 last:border-b-0"
+                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0"
                                 :class="{ 'opacity-50 pointer-events-none': item.available_stock <= 0 }">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -168,7 +168,7 @@
                     
                     <!-- No results -->
                     <div x-show="showDropdown && search.length > 0 && filteredItems.length === 0" x-cloak
-                        class="absolute z-20 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 text-center text-gray-500">
+                        class="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-4 text-center text-gray-500">
                         Tidak ada buku yang ditemukan
                     </div>
                 </div>

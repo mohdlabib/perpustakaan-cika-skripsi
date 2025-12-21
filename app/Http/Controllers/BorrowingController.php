@@ -38,7 +38,7 @@ class BorrowingController extends Controller
         if ($activeCount >= 3) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah memiliki 3 peminjaman aktif atau menunggu approval.',
+                'message' => 'Anda sudah memiliki 3 peminjaman aktif atau menunggu disetujui.',
             ], 400);
         }
 
