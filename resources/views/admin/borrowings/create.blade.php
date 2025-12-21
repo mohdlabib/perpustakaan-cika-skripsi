@@ -13,22 +13,23 @@
         </ol>
     </nav>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-t-2xl">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold">Catat Peminjaman Baru</h2>
-                    <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa</p>
-                </div>
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary-dark to-green-700 px-8 py-6 text-white rounded-2xl mb-6 shadow-sm">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold">Catat Peminjaman Baru</h2>
+                <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa</p>
             </div>
         </div>
+    </div>
 
+    <!-- Form Card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
         <!-- Form -->
         <form action="{{ route('admin.borrowings.store') }}" method="POST" class="p-8 space-y-6">
             @csrf
@@ -62,11 +63,11 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-y-auto"
+                        class="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl overflow-y-auto"
                         style="max-height: 220px;">
                         <template x-for="item in filteredItems" :key="item.nis">
                             <div @click="selectItem(item)" 
-                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0">
+                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0 group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,11 +143,11 @@
                     
                     <!-- Dropdown -->
                     <div x-show="showDropdown && filteredItems.length > 0" x-cloak
-                        class="absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-y-auto"
+                        class="absolute z-40 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl overflow-y-auto"
                         style="max-height: 220px;">
                         <template x-for="item in filteredItems" :key="item.id">
                             <div @click="selectItem(item)" 
-                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0"
+                                class="px-4 py-3 bg-white hover:bg-primary-light cursor-pointer transition border-b border-gray-100 last:border-b-0 group"
                                 :class="{ 'opacity-50 pointer-events-none': item.available_stock <= 0 }">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
