@@ -35,7 +35,7 @@
                 @forelse($shelves as $shelf)
                 <tr class="hover:bg-gray-50 transition">
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-700 font-bold rounded-lg">{{ $shelf->code }}</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 font-bold rounded-lg">{{ $shelf->code }}</span>
                     </td>
                     <td class="px-6 py-4 font-semibold text-gray-800">{{ $shelf->name }}</td>
                     <td class="px-6 py-4 text-gray-600">{{ $shelf->location ?? '-' }}</td>

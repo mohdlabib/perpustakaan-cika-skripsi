@@ -72,10 +72,10 @@
         </div>
         
         <!-- Demo QR Section -->
-        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
-            <h4 class="font-semibold text-yellow-800 mb-2">Mode Demo</h4>
-            <p class="text-yellow-700 text-sm mb-4">Untuk demo, Anda bisa klik tombol di bawah untuk simulasi scan QR:</p>
-            <button @click="demoScan()" class="px-6 py-2 bg-yellow-500 text-white rounded-xl text-sm font-medium hover:bg-yellow-600 transition">
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center">
+            <h4 class="font-semibold text-blue-800 mb-2">Mode Demo</h4>
+            <p class="text-blue-700 text-sm mb-4">Untuk demo, Anda bisa klik tombol di bawah untuk simulasi scan QR:</p>
+            <button @click="demoScan()" class="px-6 py-2 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition">
                 Simulasi Scan QR
             </button>
         </div>

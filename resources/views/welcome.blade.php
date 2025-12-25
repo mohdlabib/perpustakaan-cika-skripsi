@@ -60,7 +60,7 @@
                         <div class="text-gray-500 text-sm">Anggota</div>
                     </div>
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                        <div class="text-3xl font-bold text-purple-600">{{ \App\Models\Borrowing::count() }}</div>
+                        <div class="text-3xl font-bold text-blue-600">{{ \App\Models\Borrowing::count() }}</div>
                         <div class="text-gray-500 text-sm">Peminjaman</div>
                     </div>
                 </div>

@@ -42,9 +42,9 @@
             @forelse($topBooks as $book)
                 <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
-                        {{ $book['rank'] == 1 ? 'bg-yellow-400 text-yellow-900' : '' }}
+                        {{ $book['rank'] == 1 ? 'bg-green-500 text-white' : '' }}
                         {{ $book['rank'] == 2 ? 'bg-gray-300 text-gray-700' : '' }}
-                        {{ $book['rank'] == 3 ? 'bg-amber-600 text-white' : '' }}">
+                        {{ $book['rank'] == 3 ? 'bg-blue-500 text-white' : '' }}">
                         {{ $book['rank'] }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -71,9 +71,9 @@
             @forelse($topVisitors as $visitor)
                 <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-xl">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
-                        {{ $visitor['rank'] == 1 ? 'bg-yellow-400 text-yellow-900' : '' }}
+                        {{ $visitor['rank'] == 1 ? 'bg-green-500 text-white' : '' }}
                         {{ $visitor['rank'] == 2 ? 'bg-gray-300 text-gray-700' : '' }}
-                        {{ $visitor['rank'] == 3 ? 'bg-amber-600 text-white' : '' }}">
+                        {{ $visitor['rank'] == 3 ? 'bg-blue-500 text-white' : '' }}">
                         {{ $visitor['rank'] }}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -142,8 +142,8 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Kunjungan',
                 data: visitsData.map(d => d.count),
-                borderColor: '#7C3AED',
-                backgroundColor: 'rgba(124, 58, 237, 0.1)',
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
                 tension: 0.4,
             }]

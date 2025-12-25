@@ -33,8 +33,8 @@
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
             </div>
@@ -46,8 +46,8 @@
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm {{ $stats['overdue'] > 0 ? 'border-red-300 bg-red-50' : '' }}">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 {{ $stats['overdue'] > 0 ? 'bg-red-100' : 'bg-orange-100' }} rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 {{ $stats['overdue'] > 0 ? 'text-red-600' : 'text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 {{ $stats['overdue'] > 0 ? 'bg-red-100' : 'bg-green-100' }} rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 {{ $stats['overdue'] > 0 ? 'text-red-600' : 'text-green-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
@@ -106,7 +106,7 @@
                     <td class="px-6 py-4 text-gray-800 font-medium">{{ $student->borrowings->count() }}</td>
                     <td class="px-6 py-4">
                         @if($activeBorrowings > 0)
-                            <span class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-lg">{{ $activeBorrowings }} buku</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg">{{ $activeBorrowings }} buku</span>
                         @else
                             <span class="text-gray-400">0</span>
                         @endif
