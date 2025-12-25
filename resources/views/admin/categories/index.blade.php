@@ -49,7 +49,7 @@
                     </td>
                     <td class="px-6 py-4 text-gray-500 font-mono text-sm">{{ $category->slug }}</td>
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-lg">{{ $category->books_count }} buku</span>
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-lg">{{ $category->books_count }} buku</span>
                     </td>
                     <td class="px-6 py-4 text-gray-600 text-sm max-w-xs truncate">{{ $category->description ?? '-' }}</td>
                     <td class="px-6 py-4">

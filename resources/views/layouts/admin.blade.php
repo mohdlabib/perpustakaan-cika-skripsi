@@ -43,8 +43,8 @@
             
             <div class="p-6">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3">
-                    @if(file_exists(public_path('logo-sekolah.png')))
-                        <img src="{{ asset('logo-sekolah.png') }}" alt="Logo" class="w-12 h-12 rounded-xl object-contain bg-white p-1">
+                    @if(file_exists(public_path('logo-baru.png')))
+                        <img src="{{ asset('logo-baru.png') }}" alt="Logo" class="w-12 h-12 rounded-xl object-contain bg-white p-1">
                     @else
                         <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">

@@ -23,8 +23,8 @@
             <div class="max-w-4xl w-full text-center">
                 <!-- Logo -->
                 <div class="mb-8">
-                    @if(file_exists(public_path('logo-sekolah.png')))
-                        <img src="{{ asset('logo-sekolah.png') }}" alt="Logo SMAN 8 Pekanbaru" class="w-32 h-32 mx-auto object-contain">
+                    @if(file_exists(public_path('logo-baru.png')))
+                        <img src="{{ asset('logo-baru.png') }}" alt="Logo Perpustakaan Jendela Ilmu" class="w-32 h-32 mx-auto object-contain">
                     @else
                         <div class="w-32 h-32 mx-auto bg-primary-dark rounded-3xl flex items-center justify-center">
                             <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,8 +91,8 @@
                     
                     <!-- Login Siswa -->
                     <a href="{{ route('student.login') }}" class="group bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 cursor-pointer">
-                        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-600 transition">
-                            <svg class="w-8 h-8 text-blue-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-green-600 transition">
+                            <svg class="w-8 h-8 text-green-600 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                             </svg>
                         </div>

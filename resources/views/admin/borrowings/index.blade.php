@@ -5,15 +5,15 @@
 @section('content')
 <!-- Stats Cards - Same style as Dashboard -->
 <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm {{ \App\Models\Borrowing::pending()->count() > 0 ? 'border-yellow-200 bg-yellow-50' : '' }}">
+    <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm {{ \App\Models\Borrowing::pending()->count() > 0 ? 'border-blue-200 bg-blue-50' : '' }}">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'bg-yellow-100' : 'bg-yellow-50' }} rounded-xl flex items-center justify-center">
-                <svg class="w-6 h-6 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-yellow-600' : 'text-yellow-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'bg-blue-100' : 'bg-blue-50' }} rounded-xl flex items-center justify-center">
+                <svg class="w-6 h-6 {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-blue-600' : 'text-blue-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
             <div>
-                <div class="text-2xl font-bold {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-yellow-600' : 'text-gray-800' }}">{{ \App\Models\Borrowing::pending()->count() }}</div>
+                <div class="text-2xl font-bold {{ \App\Models\Borrowing::pending()->count() > 0 ? 'text-blue-600' : 'text-gray-800' }}">{{ \App\Models\Borrowing::pending()->count() }}</div>
                 <div class="text-gray-500 text-sm">Menunggu</div>
             </div>
         </div>
@@ -181,7 +181,7 @@
                     </td>
                     <td class="px-6 py-4">
                         @if($borrowing->status === 'pending')
-                            <span class="px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-lg inline-flex items-center gap-1">
+                            <span class="px-3 py-1.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg inline-flex items-center gap-1">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>

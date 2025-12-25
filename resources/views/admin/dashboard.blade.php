@@ -18,7 +18,7 @@
         <div class="text-gray-500 text-sm mt-1">Sedang Dipinjam</div>
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100">
-        <div class="text-3xl font-bold text-purple-600">{{ $stats['today_visits'] }}</div>
+        <div class="text-3xl font-bold text-green-600">{{ $stats['today_visits'] }}</div>
         <div class="text-gray-500 text-sm mt-1">Pengunjung Hari Ini</div>
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100 {{ $stats['overdue_borrowings'] > 0 ? 'bg-red-50 border-red-200' : '' }}">
@@ -81,7 +81,7 @@
                         <p class="text-gray-500 text-sm">{{ $visitor['class'] }} • {{ $visitor['nis'] }}</p>
                     </div>
                     <div class="text-right">
-                        <span class="text-lg font-bold text-purple-600">{{ $visitor['visit_count'] }}</span>
+                        <span class="text-lg font-bold text-blue-600">{{ $visitor['visit_count'] }}</span>
                         <p class="text-gray-400 text-xs">kunjungan</p>
                     </div>
                 </div>

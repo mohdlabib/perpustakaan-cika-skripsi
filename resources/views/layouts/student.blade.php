@@ -25,8 +25,8 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                        @if(file_exists(public_path('logo-sekolah.png')))
-                            <img src="{{ asset('logo-sekolah.png') }}" alt="Logo SMAN 8" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
+                        @if(file_exists(public_path('logo-baru.png')))
+                            <img src="{{ asset('logo-baru.png') }}" alt="Logo Perpustakaan" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
                         @else
                             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 transition">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -120,8 +120,8 @@
             <div class="grid md:grid-cols-3 gap-8">
                 <div>
                     <div class="flex items-center gap-3 mb-4">
-                        @if(file_exists(public_path('logo-sekolah.png')))
-                            <img src="{{ asset('logo-sekolah.png') }}" alt="Logo" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
+                        @if(file_exists(public_path('logo-baru.png')))
+                            <img src="{{ asset('logo-baru.png') }}" alt="Logo" class="w-10 h-10 rounded-lg object-contain bg-white p-1">
                         @else
                             <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
