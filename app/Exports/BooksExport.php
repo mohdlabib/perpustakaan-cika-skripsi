@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Borrowing;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -29,7 +30,7 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     public function collection()
     {
-        $query = Book::with(['category', 'borrowings']);
+        $query = Book::with(['category', 'copies', 'borrowings']);
         
         if ($this->category) {
             $query->where('category_id', $this->category);
@@ -42,44 +43,46 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     {
         return [
             'No',
-            'Kode Item',
             'Judul Buku',
             'Pengarang',
+            'ISBN',
             'Penerbit',
             'Tahun Terbit',
-            'ISBN',
             'Kategori',
-            'Lokasi Rak',
-            'Stok Total',
-            'Sedang Dipinjam',
-            'Stok Tersedia',
             'Klasifikasi',
             'No. Panggil',
-            'Harga',
+            'Edisi',
+            'Total Eksemplar',
+            'Tersedia',
+            'Dipinjam',
+            'Rusak/Hilang',
         ];
     }
 
     public function map($book): array
     {
         $this->rowNumber++;
+        $totalCopies = $book->copies->count();
         $borrowed = $book->borrowings->where('status', 'borrowed')->count();
+        $damagedLost = $book->copies->whereIn('condition', ['rusak', 'hilang'])->count();
+        $available = $book->copies->where('condition', 'baik')
+            ->where('is_available', true)->count() - $borrowed;
         
         return [
             $this->rowNumber,
-            $book->item_code ?? '-',
             $book->title,
             $book->author,
+            $book->isbn ?? '-',
             $book->publisher ?? '-',
             $book->publication_year ?? '-',
-            $book->isbn ?? '-',
             $book->category->name ?? '-',
-            $book->shelf_location ?? '-',
-            $book->stock,
-            $borrowed,
-            $book->stock - $borrowed,
             $book->classification ?? '-',
             $book->call_number ?? '-',
-            $book->price ? 'Rp ' . number_format($book->price, 0, ',', '.') : '-',
+            $book->edition ?? '-',
+            $totalCopies,
+            max(0, $available),
+            $borrowed,
+            $damagedLost,
         ];
     }
 
@@ -87,20 +90,19 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
     {
         return [
             'A' => 5,   // No
-            'B' => 12,  // Kode Item
-            'C' => 40,  // Judul
-            'D' => 25,  // Pengarang
+            'B' => 40,  // Judul
+            'C' => 25,  // Pengarang
+            'D' => 18,  // ISBN
             'E' => 20,  // Penerbit
             'F' => 12,  // Tahun
-            'G' => 18,  // ISBN
-            'H' => 18,  // Kategori
-            'I' => 12,  // Lokasi
-            'J' => 10,  // Stok Total
-            'K' => 14,  // Dipinjam
+            'G' => 18,  // Kategori
+            'H' => 12,  // Klasifikasi
+            'I' => 12,  // No Panggil
+            'J' => 15,  // Edisi
+            'K' => 14,  // Total
             'L' => 12,  // Tersedia
-            'M' => 12,  // Klasifikasi
-            'N' => 12,  // No Panggil
-            'O' => 15,  // Harga
+            'M' => 12,  // Dipinjam
+            'N' => 14,  // Rusak/Hilang
         ];
     }
 
@@ -132,15 +134,15 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
                 $lastRow = $sheet->getHighestRow();
-                $lastColumn = 'O';
+                $lastColumn = 'N';
                 
                 // Add title header
                 $sheet->insertNewRowBefore(1, 4);
-                $sheet->mergeCells('A1:O1');
+                $sheet->mergeCells('A1:N1');
                 $sheet->setCellValue('A1', 'LAPORAN DATA BUKU PERPUSTAKAAN');
-                $sheet->mergeCells('A2:O2');
+                $sheet->mergeCells('A2:N2');
                 $sheet->setCellValue('A2', 'PERPUSTAKAAN SMAN 8 PEKANBARU');
-                $sheet->mergeCells('A3:O3');
+                $sheet->mergeCells('A3:N3');
                 $sheet->setCellValue('A3', 'Tanggal Export: ' . now()->format('d F Y H:i'));
                 
                 // Style title
@@ -174,7 +176,7 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                 // Center align number columns
                 $sheet->getStyle('A5:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 $sheet->getStyle('F5:F' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('J5:L' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle('K5:N' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 
                 // Add summary at bottom
                 $summaryRow = $lastRow + 2;
@@ -182,13 +184,13 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                 $sheet->getStyle('A' . $summaryRow)->getFont()->setBold(true);
                 
                 $totalBooks = Book::count();
-                $totalStock = Book::sum('stock');
+                $totalCopies = BookCopy::where('condition', '!=', 'hilang')->count();
                 $totalBorrowed = Borrowing::where('status', 'borrowed')->count();
                 
                 $sheet->setCellValue('A' . ($summaryRow + 1), 'Total Judul Buku: ' . $totalBooks);
-                $sheet->setCellValue('A' . ($summaryRow + 2), 'Total Stok: ' . $totalStock);
+                $sheet->setCellValue('A' . ($summaryRow + 2), 'Total Eksemplar: ' . $totalCopies);
                 $sheet->setCellValue('A' . ($summaryRow + 3), 'Total Dipinjam: ' . $totalBorrowed);
-                $sheet->setCellValue('A' . ($summaryRow + 4), 'Total Tersedia: ' . ($totalStock - $totalBorrowed));
+                $sheet->setCellValue('A' . ($summaryRow + 4), 'Total Tersedia: ' . ($totalCopies - $totalBorrowed));
                 
                 // Freeze header row
                 $sheet->freezePane('A6');

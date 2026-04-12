@@ -78,12 +78,26 @@
         <h2 class="text-lg font-semibold text-gray-800">Manajemen Peminjaman</h2>
         <p class="text-gray-500 text-sm">Kelola peminjaman dan pengembalian buku</p>
     </div>
-    <a href="{{ route('admin.borrowings.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Catat Peminjaman
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.borrowings.template') }}" class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Template
+        </a>
+        <button onclick="document.getElementById('importBorrowingModal').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Import Excel
+        </button>
+        <a href="{{ route('admin.borrowings.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Catat Peminjaman
+        </a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -379,6 +393,45 @@ function closeApproveModal() {
     document.getElementById('approveModal').classList.add('hidden');
 }
 </script>
+
+<!-- Import Modal -->
+<div id="importBorrowingModal" class="fixed inset-0 z-50 hidden" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('importBorrowingModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-blue-600 p-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Import Data Peminjaman</h3>
+                        <p class="text-white/70 text-sm">Upload file Excel (.xlsx, .xls, .csv)</p>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ route('admin.borrowings.import') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">File Excel</label>
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-2">Kolom: NIS, Kode Eksemplar, Judul Buku, Tanggal Pinjam, Batas Kembali, Status. 
+                        <a href="{{ route('admin.borrowings.template') }}" class="text-blue-600 underline">Download template</a>
+                    </p>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('importBorrowingModal').classList.add('hidden')" class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition cursor-pointer">
+                        Import Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
-
-

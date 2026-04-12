@@ -89,10 +89,22 @@ class ShelfController extends Controller
 
     public function destroy(Shelf $shelf)
     {
-        $shelf->delete();
-        
-        return redirect()->route('admin.shelves.index')
-            ->with('success', 'Rak berhasil dihapus.');
+        if ($shelf->books()->count() > 0) {
+            return redirect()->route('admin.shelves.index')
+                ->with('error', 'Rak tidak dapat dihapus karena masih memiliki buku.');
+        }
+
+        try {
+            // Delete columns first
+            $shelf->columns()->delete();
+            $shelf->delete();
+            
+            return redirect()->route('admin.shelves.index')
+                ->with('success', 'Rak berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.shelves.index')
+                ->with('error', 'Rak tidak dapat dihapus karena masih terkait dengan data lain.');
+        }
     }
 
     /**

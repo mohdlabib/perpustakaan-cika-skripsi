@@ -33,7 +33,7 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Book::where('stock', '>', 0)->count() }}</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Book::available()->count() }}</div>
                     <div class="text-gray-500 text-sm">Tersedia</div>
                 </div>
             </div>

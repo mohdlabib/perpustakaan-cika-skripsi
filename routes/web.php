@@ -61,6 +61,10 @@ Route::prefix('login')->group(function () {
 });
 Route::post('/logout/student', [StudentLoginController::class, 'logout'])->name('student.logout');
 
+// Student Profile
+Route::get('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('student.profile');
+Route::put('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
+
 // Public Catalog
 Route::prefix('catalog')->group(function () {
     Route::get('/', [CatalogController::class, 'index'])->name('catalog.index');
@@ -72,6 +76,7 @@ Route::prefix('catalog')->group(function () {
 Route::prefix('attendance')->group(function () {
     Route::get('/scan', [AttendanceController::class, 'scan'])->name('attendance.scan');
     Route::post('/store', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::post('/store-guest', [AttendanceController::class, 'storeGuest'])->name('attendance.store-guest');
     Route::get('/stats', [AttendanceController::class, 'todayStats'])->name('attendance.stats');
 });
 
@@ -92,6 +97,15 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::resource('books', BookController::class);
     Route::get('/books/{book}/detail', [BookController::class, 'detail'])->name('books.detail');
     Route::get('/books-export', [BookController::class, 'export'])->name('books.export');
+    Route::post('/books/import', [BookController::class, 'import'])->name('books.import');
+    Route::get('/books/template/download', [BookController::class, 'downloadTemplate'])->name('books.template');
+    
+    // Book Copies (Eksemplar)
+    Route::get('/books/{book}/copies/create', [\App\Http\Controllers\Admin\BookCopyController::class, 'create'])->name('books.copies.create');
+    Route::post('/books/{book}/copies', [\App\Http\Controllers\Admin\BookCopyController::class, 'store'])->name('books.copies.store');
+    Route::get('/books/{book}/copies/{copy}/edit', [\App\Http\Controllers\Admin\BookCopyController::class, 'edit'])->name('books.copies.edit');
+    Route::put('/books/{book}/copies/{copy}', [\App\Http\Controllers\Admin\BookCopyController::class, 'update'])->name('books.copies.update');
+    Route::delete('/books/{book}/copies/{copy}', [\App\Http\Controllers\Admin\BookCopyController::class, 'destroy'])->name('books.copies.destroy');
     
     // Borrowings Management
     Route::get('/borrowings', [AdminBorrowingController::class, 'index'])->name('borrowings.index');
@@ -102,9 +116,14 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::put('/borrowings/{borrowing}/return', [AdminBorrowingController::class, 'returnBook'])->name('borrowings.return');
     Route::put('/borrowings/{borrowing}/approve', [AdminBorrowingController::class, 'approve'])->name('borrowings.approve');
     Route::put('/borrowings/{borrowing}/reject', [AdminBorrowingController::class, 'reject'])->name('borrowings.reject');
+    Route::post('/borrowings/import', [AdminBorrowingController::class, 'import'])->name('borrowings.import');
+    Route::get('/borrowings/template/download', [AdminBorrowingController::class, 'downloadTemplate'])->name('borrowings.template');
     
     // Master Data
     Route::resource('students', StudentController::class);
+    Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
+    Route::get('/students/export/download', [StudentController::class, 'export'])->name('students.export');
+    Route::get('/students/template/download', [StudentController::class, 'downloadTemplate'])->name('students.template');
     Route::resource('grades', GradeController::class);
     Route::resource('shelves', ShelfController::class);
     Route::get('/shelves/{shelf}/columns', [ShelfController::class, 'getColumns'])->name('shelves.columns');
@@ -122,6 +141,8 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::get('/reports/students/export', [ReportController::class, 'exportStudents'])->name('reports.students.export');
     Route::get('/reports/visitors', [ReportController::class, 'visitors'])->name('reports.visitors');
     Route::get('/reports/visitors/export', [ReportController::class, 'exportVisitors'])->name('reports.visitors.export');
+    Route::post('/reports/visitors/import', [ReportController::class, 'importVisitors'])->name('reports.visitors.import');
+    Route::get('/reports/visitors/template/download', [ReportController::class, 'downloadVisitorsTemplate'])->name('reports.visitors.template');
     
     // Barcode Scanner
     Route::get('/scan', [\App\Http\Controllers\Admin\ScanController::class, 'index'])->name('scan');

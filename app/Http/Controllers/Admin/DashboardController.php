@@ -23,7 +23,7 @@ class DashboardController extends Controller
             'active_borrowings' => Borrowing::active()->count(),
             'today_visits' => Visit::today()->count(),
             'overdue_borrowings' => Borrowing::overdue()->count(),
-            'available_books' => Book::where('stock', '>', 0)->count(),
+            'available_books' => Book::available()->count(),
         ];
 
         // Top 3 Most Borrowed Books

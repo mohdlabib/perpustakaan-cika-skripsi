@@ -17,7 +17,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Record attendance from QR scan.
+     * Record attendance from QR scan (student).
      */
     public function store(Request $request)
     {
@@ -86,16 +86,46 @@ class AttendanceController extends Controller
     }
 
     /**
+     * Record guest attendance (non-student).
+     */
+    public function storeGuest(Request $request)
+    {
+        $request->validate([
+            'guest_name' => 'required|string|max:255',
+            'guest_institution' => 'nullable|string|max:255',
+            'guest_purpose' => 'nullable|string|max:500',
+        ]);
+
+        $visit = Visit::recordGuestVisit(
+            $request->guest_name,
+            $request->guest_institution,
+            $request->guest_purpose
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Selamat datang, {$request->guest_name}! Kunjungan berhasil dicatat.",
+            'visit' => [
+                'id' => $visit->id,
+                'visited_at' => $visit->visited_at->format('d M Y H:i'),
+                'guest_name' => $request->guest_name,
+            ],
+        ]);
+    }
+
+    /**
      * Get today's attendance statistics.
      */
     public function todayStats()
     {
         $todayCount = Visit::today()->count();
         $weekCount = Visit::thisWeek()->count();
+        $guestTodayCount = Visit::today()->guests()->count();
         
         return response()->json([
             'today' => $todayCount,
             'this_week' => $weekCount,
+            'guests_today' => $guestTodayCount,
         ]);
     }
     

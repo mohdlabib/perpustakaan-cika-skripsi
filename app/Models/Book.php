@@ -11,13 +11,10 @@ class Book extends Model
 
     protected $fillable = [
         'isbn',
-        'item_code',
         'title',
         'author',
         'edition',
         'category_id',
-        'shelf_id',
-        'shelf_column_id',
         'publisher',
         'publication_year',
         'publication_place',
@@ -25,11 +22,6 @@ class Book extends Model
         'physical_description',
         'classification',
         'call_number',
-        'inventory_code',
-        'shelf_location',
-        'received_date',
-        'price',
-        'stock',
         'cover_image',
         'custom_fields',
     ];
@@ -37,9 +29,6 @@ class Book extends Model
     protected $casts = [
         'custom_fields' => 'array',
         'publication_year' => 'integer',
-        'stock' => 'integer',
-        'price' => 'decimal:2',
-        'received_date' => 'date',
     ];
 
     public function category()
@@ -47,14 +36,9 @@ class Book extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function shelf()
+    public function copies()
     {
-        return $this->belongsTo(Shelf::class);
-    }
-
-    public function shelfColumn()
-    {
-        return $this->belongsTo(ShelfColumn::class);
+        return $this->hasMany(BookCopy::class);
     }
 
     public function borrowings()
@@ -67,9 +51,24 @@ class Book extends Model
         return $this->borrowings()->where('status', 'borrowed');
     }
 
+    /**
+     * Get total stock (all copies excluding 'hilang').
+     */
+    public function getStockAttribute(): int
+    {
+        return $this->copies()->where('condition', '!=', 'hilang')->count();
+    }
+
+    /**
+     * Get available stock (copies not currently borrowed and in good condition).
+     */
     public function getAvailableStockAttribute(): int
     {
-        return $this->stock - $this->activeBorrowings()->count();
+        return $this->copies()
+            ->where('condition', 'baik')
+            ->where('is_available', true)
+            ->whereDoesntHave('borrowings', fn($q) => $q->where('status', 'borrowed'))
+            ->count();
     }
 
     public function getIsAvailableAttribute(): bool
@@ -79,7 +78,11 @@ class Book extends Model
 
     public function scopeAvailable($query)
     {
-        return $query->whereRaw('stock > (SELECT COUNT(*) FROM borrowings WHERE borrowings.book_id = books.id AND borrowings.status = "borrowed")');
+        return $query->whereHas('copies', function ($q) {
+            $q->where('condition', 'baik')
+              ->where('is_available', true)
+              ->whereDoesntHave('borrowings', fn($bq) => $bq->where('status', 'borrowed'));
+        });
     }
 
     public function scopeSearch($query, $search)
@@ -88,9 +91,11 @@ class Book extends Model
             $q->where('title', 'like', "%{$search}%")
               ->orWhere('author', 'like', "%{$search}%")
               ->orWhere('isbn', 'like', "%{$search}%")
-              ->orWhere('item_code', 'like', "%{$search}%")
               ->orWhere('call_number', 'like', "%{$search}%")
-              ->orWhere('inventory_code', 'like', "%{$search}%");
+              ->orWhereHas('copies', function ($cq) use ($search) {
+                  $cq->where('copy_code', 'like', "%{$search}%")
+                    ->orWhere('inventory_code', 'like', "%{$search}%");
+              });
         });
     }
 

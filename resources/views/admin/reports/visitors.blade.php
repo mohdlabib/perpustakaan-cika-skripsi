@@ -264,18 +264,32 @@
 </div>
 
 <!-- Data Table Section -->
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h2 class="text-lg font-semibold text-gray-800">Riwayat Kunjungan</h2>
-        <p class="text-gray-500 text-sm">Daftar kunjungan siswa ke perpustakaan</p>
+        <p class="text-gray-500 text-sm">Daftar kunjungan siswa dan tamu ke perpustakaan</p>
     </div>
-    <a href="{{ route('admin.reports.visitors.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'grade' => request('grade')]) }}" 
-       class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        Export Excel
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.reports.visitors.template') }}" class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Template
+        </a>
+        <button onclick="document.getElementById('importVisitorModal').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Import Excel
+        </button>
+        <a href="{{ route('admin.reports.visitors.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'grade' => request('grade')]) }}" 
+           class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Export Excel
+        </a>
+    </div>
 </div>
 
 <!-- Visits Table -->
@@ -286,9 +300,10 @@
                 <tr class="text-left text-gray-600 text-sm">
                     <th class="px-6 py-4 font-semibold">No</th>
                     <th class="px-6 py-4 font-semibold">Waktu Kunjungan</th>
+                    <th class="px-6 py-4 font-semibold">Tipe</th>
                     <th class="px-6 py-4 font-semibold">NIS</th>
-                    <th class="px-6 py-4 font-semibold">Nama Siswa</th>
-                    <th class="px-6 py-4 font-semibold">Kelas</th>
+                    <th class="px-6 py-4 font-semibold">Nama</th>
+                    <th class="px-6 py-4 font-semibold">Kelas / Instansi</th>
                     <th class="px-6 py-4 font-semibold">Angkatan</th>
                 </tr>
             </thead>
@@ -309,18 +324,29 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-gray-600 font-mono">{{ $visit->student_nis }}</td>
-                    <td class="px-6 py-4 font-semibold text-gray-800">{{ $visit->student->name ?? '-' }}</td>
-                    <td class="px-6 py-4 text-gray-600">{{ $visit->student->class ?? '-' }}</td>
                     <td class="px-6 py-4">
-                        <span class="px-3 py-1 bg-primary-light text-primary-dark text-xs font-medium rounded-lg">
-                            {{ $visit->student->grade->name ?? '-' }}
-                        </span>
+                        @if($visit->visitor_type === 'guest')
+                            <span class="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-lg">Tamu</span>
+                        @else
+                            <span class="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg">Siswa</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 font-mono">{{ $visit->student_nis ?? '-' }}</td>
+                    <td class="px-6 py-4 font-semibold text-gray-800">{{ $visit->visitor_name }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ $visit->visitor_detail }}</td>
+                    <td class="px-6 py-4">
+                        @if($visit->visitor_type === 'student' && $visit->student && $visit->student->grade)
+                            <span class="px-3 py-1 bg-primary-light text-primary-dark text-xs font-medium rounded-lg">
+                                {{ $visit->student->grade->name }}
+                            </span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                    <td colspan="7" class="px-6 py-12 text-center text-gray-400">
                         <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                         </svg>
@@ -440,4 +466,45 @@ function downloadMonthlyChart() {
 }
 </script>
 @endpush
+
+<!-- Import Modal -->
+<div id="importVisitorModal" class="fixed inset-0 z-50 hidden" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('importVisitorModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-blue-600 p-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Import Data Kunjungan</h3>
+                        <p class="text-white/70 text-sm">Upload file Excel (.xlsx, .xls, .csv)</p>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ route('admin.reports.visitors.import') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">File Excel</label>
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-2">Kolom: NIS (opsional), Nama, Instansi, Tujuan, Tanggal Kunjungan. 
+                        <a href="{{ route('admin.reports.visitors.template') }}" class="text-blue-600 underline">Download template</a>
+                    </p>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('importVisitorModal').classList.add('hidden')" class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition cursor-pointer">
+                        Import Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

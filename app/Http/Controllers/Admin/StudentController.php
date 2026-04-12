@@ -91,9 +91,77 @@ class StudentController extends Controller
 
     public function destroy(Student $student)
     {
-        $student->delete();
-        
-        return redirect()->route('admin.students.index')
-            ->with('success', 'Siswa berhasil dihapus.');
+        // Check active borrowings
+        if ($student->activeBorrowings()->count() > 0) {
+            return redirect()->route('admin.students.index')
+                ->with('error', 'Siswa tidak dapat dihapus karena masih memiliki peminjaman aktif.');
+        }
+
+        try {
+            $student->delete();
+            
+            return redirect()->route('admin.students.index')
+                ->with('success', 'Siswa berhasil dihapus.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.students.index')
+                ->with('error', 'Siswa tidak dapat dihapus karena masih terkait dengan data lain (peminjaman/kunjungan).');
+        }
+    }
+
+    /**
+     * Import students from Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            $import = new \App\Imports\StudentsImport();
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $msg = "Import berhasil! {$import->getImportedCount()} siswa baru ditambahkan.";
+            if ($import->getUpdatedCount() > 0) {
+                $msg .= " {$import->getUpdatedCount()} siswa diperbarui.";
+            }
+
+            return redirect()->route('admin.students.index')->with('success', $msg);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.students.index')
+                ->with('error', 'Gagal import: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export students to Excel.
+     */
+    public function export(Request $request)
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\StudentsExport($request->grade),
+            'data-siswa-' . now()->format('Y-m-d') . '.xlsx'
+        );
+    }
+
+    /**
+     * Download import template.
+     */
+    public function downloadTemplate()
+    {
+        $headers = ['NIS', 'Nama', 'Kelas', 'Telepon'];
+
+        $callback = function() use ($headers) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $headers);
+            fputcsv($file, ['12345', 'Ahmad Budi', 'XII IPA 1', '08123456789']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template-import-siswa.csv"',
+        ]);
     }
 }

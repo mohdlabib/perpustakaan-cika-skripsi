@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Student;
 use App\Models\Borrowing;
 use App\Models\Category;
@@ -16,7 +17,7 @@ class ReportController extends Controller
 {
     public function books(Request $request)
     {
-        $query = Book::with('category');
+        $query = Book::with(['category', 'copies']);
         
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
@@ -26,9 +27,11 @@ class ReportController extends Controller
         $categories = Category::orderBy('name')->get();
         
         // Statistics
+        $totalCopies = BookCopy::where('condition', '!=', 'hilang')->count();
         $stats = [
             'total' => Book::count(),
-            'available' => Book::sum('stock'),
+            'total_copies' => $totalCopies,
+            'available' => $totalCopies - Borrowing::active()->count(),
             'borrowed' => Borrowing::active()->count(),
             'categories' => Category::count(),
         ];
@@ -213,5 +216,54 @@ class ReportController extends Controller
             new \App\Exports\VisitorsExport($startDate, $endDate, $grade),
             $filename
         );
+    }
+
+    /**
+     * Import visitors from Excel.
+     */
+    public function importVisitors(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120',
+        ]);
+
+        try {
+            $import = new \App\Imports\VisitsImport();
+            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+
+            $msg = "Import berhasil! {$import->getImportedCount()} kunjungan ditambahkan.";
+            if ($import->getSkippedCount() > 0) {
+                $msg .= " {$import->getSkippedCount()} baris di-skip.";
+            }
+
+            return redirect()->route('admin.reports.visitors')->with('success', $msg);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.reports.visitors')
+                ->with('error', 'Gagal import: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download visitors import template.
+     */
+    public function downloadVisitorsTemplate()
+    {
+        $headers = ['NIS', 'Nama', 'Instansi', 'Tujuan', 'Tanggal Kunjungan'];
+
+        $callback = function() use ($headers) {
+            $file = fopen('php://output', 'w');
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $headers);
+            // Sample: student visitor
+            fputcsv($file, ['12345', 'Ahmad Budi', '', '', '2026-04-12']);
+            // Sample: guest visitor
+            fputcsv($file, ['', 'Siti Nurbaya', 'Universitas Riau', 'Referensi penelitian', '2026-04-12']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template-import-kunjungan.csv"',
+        ]);
     }
 }

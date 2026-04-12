@@ -56,18 +56,23 @@ class GradeController extends Controller
 
     public function destroy(Grade $grade)
     {
-        // Delete all students in this grade first
-        $deletedStudents = $grade->students()->delete();
-        
-        $grade->delete();
-        
-        $message = 'Angkatan berhasil dihapus.';
-        if ($deletedStudents > 0) {
-            $message = "Angkatan berhasil dihapus beserta {$deletedStudents} siswa yang terdaftar.";
+        try {
+            // Delete all students in this grade first
+            $deletedStudents = $grade->students()->delete();
+            
+            $grade->delete();
+            
+            $message = 'Angkatan berhasil dihapus.';
+            if ($deletedStudents > 0) {
+                $message = "Angkatan berhasil dihapus beserta {$deletedStudents} siswa yang terdaftar.";
+            }
+            
+            return redirect()->route('admin.grades.index')
+                ->with('success', $message);
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('admin.grades.index')
+                ->with('error', 'Angkatan tidak dapat dihapus karena masih terkait dengan data lain.');
         }
-        
-        return redirect()->route('admin.grades.index')
-            ->with('success', $message);
     }
 }
 

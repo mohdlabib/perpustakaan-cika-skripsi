@@ -108,7 +108,8 @@
                     @endif
                 </a>
                 
-                <!-- Scan Barcode -->
+                <!-- Menu Scan Barcode disembunyikan (route masih aktif) -->
+                {{-- 
                 <a href="{{ route('admin.scan') }}" @click="sidebarOpen = false"
                    class="{{ request()->routeIs('admin.scan*') ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10' }} flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium cursor-pointer mb-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,6 +117,7 @@
                     </svg>
                     Scan Barcode
                 </a>
+                --}}
                 
                 <!-- Master Data Section -->
                 <div class="mt-6 pt-6 border-t border-white/10">
@@ -303,7 +305,9 @@
     </div>
     
     <!-- Global Confirm Modal -->
-    <div x-data="confirmModal()" x-cloak>
+    <div x-data="confirmModal()" x-cloak
+         @open-confirm.window="open($event.detail)"
+         @open-toast.window="$dispatch('show-toast', $event.detail)">
         <div x-show="isOpen" 
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0"
@@ -356,6 +360,7 @@
 
     <!-- Global Toast Notification -->
     <div x-data="toastNotification()" x-cloak
+         @show-toast.window="show($event.detail.message, $event.detail.type)"
          class="fixed top-4 right-4 z-[101] space-y-2">
         <template x-for="toast in toasts" :key="toast.id">
             <div x-show="toast.show"
@@ -400,7 +405,7 @@
     </div>
     
     <script>
-    // Global Confirm Modal
+    // Global Confirm Modal (Alpine.js v3 compatible)
     function confirmModal() {
         return {
             isOpen: false,
@@ -511,19 +516,13 @@
         }
     }
     
-    // Global helper functions
+    // Global helper functions - Alpine.js v3 compatible using $dispatch events
     window.showConfirm = function(options) {
-        const modal = document.querySelector('[x-data="confirmModal()"]');
-        if (modal && modal.__x) {
-            modal.__x.$data.open(options);
-        }
+        window.dispatchEvent(new CustomEvent('open-confirm', { detail: options }));
     };
     
     window.showToast = function(message, type = 'info') {
-        const toast = document.querySelector('[x-data="toastNotification()"]');
-        if (toast && toast.__x) {
-            toast.__x.$data.show(message, type);
-        }
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
     };
     
     // Delete confirmation helper

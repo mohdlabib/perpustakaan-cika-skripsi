@@ -60,18 +60,37 @@
     </div>
 </div>
 
-<!-- Header -->
 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div>
         <h2 class="text-lg font-semibold text-gray-800">Daftar Siswa</h2>
         <p class="text-gray-500 text-sm">Kelola data siswa perpustakaan</p>
     </div>
-    <a href="{{ route('admin.students.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        Tambah Siswa
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('admin.students.template') }}" class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Template
+        </a>
+        <button onclick="document.getElementById('importStudentModal').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Import Excel
+        </button>
+        <a href="{{ route('admin.students.export') }}" class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Export Excel
+        </a>
+        <a href="{{ route('admin.students.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Tambah Siswa
+        </a>
+    </div>
 </div>
 
 <!-- Filters -->
@@ -104,6 +123,7 @@
                 <tr class="text-left text-gray-600 text-sm">
                     <th class="px-6 py-4 font-semibold">Siswa</th>
                     <th class="px-6 py-4 font-semibold">NIS</th>
+                    <th class="px-6 py-4 font-semibold">Kelas</th>
                     <th class="px-6 py-4 font-semibold">Angkatan</th>
                     <th class="px-6 py-4 font-semibold">Telepon</th>
                     <th class="px-6 py-4 font-semibold text-right">Aksi</th>
@@ -128,6 +148,13 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 font-mono text-gray-600">{{ $student->nis }}</td>
+                    <td class="px-6 py-4">
+                        @if($student->class)
+                            <span class="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-lg">{{ $student->class }}</span>
+                        @else
+                            <span class="text-gray-400">-</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4">
                         @if($student->grade)
                             <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-lg">{{ $student->grade->name }}</span>
@@ -157,7 +184,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-16 text-center">
+                    <td colspan="6" class="px-6 py-16 text-center">
                         <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
@@ -171,6 +198,47 @@
     
     <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
         {{ $students->withQueryString()->links() }}
+    </div>
+</div>
+
+<!-- Import Modal -->
+<div id="importStudentModal" class="fixed inset-0 z-50 hidden" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('importStudentModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-blue-600 p-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Import Data Siswa</h3>
+                        <p class="text-white/70 text-sm">Upload file Excel (.xlsx, .xls, .csv)</p>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ route('admin.students.import') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">File Excel</label>
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-2">Format kolom: NIS, Nama, Kelas, Telepon. 
+                        <a href="{{ route('admin.students.template') }}" class="text-blue-600 underline">Download template</a>
+                    </p>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('importStudentModal').classList.add('hidden')" class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition cursor-pointer">
+                        Import Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

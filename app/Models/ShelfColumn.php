@@ -27,7 +27,12 @@ class ShelfColumn extends Model
 
     public function books()
     {
-        return $this->hasMany(Book::class);
+        return $this->hasMany(BookCopy::class);
+    }
+
+    public function bookCopies()
+    {
+        return $this->hasMany(BookCopy::class);
     }
 
     public function scopeActive($query)

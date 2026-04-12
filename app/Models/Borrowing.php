@@ -10,6 +10,7 @@ class Borrowing extends Model
     protected $fillable = [
         'student_nis',
         'book_id',
+        'book_copy_id',
         'borrow_date',
         'due_date',
         'return_date',
@@ -41,6 +42,14 @@ class Borrowing extends Model
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
+    }
+
+    /**
+     * Get the specific book copy that was borrowed.
+     */
+    public function bookCopy(): BelongsTo
+    {
+        return $this->belongsTo(BookCopy::class);
     }
 
     /**
