@@ -87,10 +87,16 @@
         </a>
         <button onclick="document.getElementById('importBorrowingModal').classList.remove('hidden')" class="px-4 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
             Import Excel
         </button>
+        <a href="{{ route('admin.borrowings.export', ['status' => request('status')]) }}" class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            Export Excel
+        </a>
         <a href="{{ route('admin.borrowings.create') }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -161,7 +167,7 @@
         <table class="w-full">
             <thead class="bg-gray-50">
                 <tr class="text-left text-gray-600 text-sm">
-                    <th class="px-6 py-4 font-semibold">Siswa</th>
+                    <th class="px-6 py-4 font-semibold">Peminjam</th>
                     <th class="px-6 py-4 font-semibold">Buku</th>
                     <th class="px-6 py-4 font-semibold">Tgl Pinjam</th>
                     <th class="px-6 py-4 font-semibold">Batas</th>
@@ -174,13 +180,29 @@
                 <tr class="hover:bg-gray-50 transition {{ $borrowing->is_overdue ? 'bg-red-50' : '' }}">
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center font-bold text-primary-dark">
-                                {{ substr($borrowing->student->name ?? 'X', 0, 1) }}
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-800">{{ $borrowing->student->name ?? '-' }}</p>
-                                <p class="text-gray-400 text-sm">{{ $borrowing->student_nis }} • {{ $borrowing->student->class ?? '' }}</p>
-                            </div>
+                            @if(($borrowing->borrower_type ?? 'student') === 'teacher')
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center font-bold text-orange-700">
+                                    {{ substr($borrowing->borrower_name ?? 'G', 0, 1) }}
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ $borrowing->borrower_name ?? '-' }}</p>
+                                    <p class="text-gray-400 text-sm">
+                                        <span class="px-1.5 py-0.5 bg-orange-100 text-orange-700 text-xs font-medium rounded">Guru</span>
+                                        {{ $borrowing->borrower_info ?? '' }}
+                                    </p>
+                                </div>
+                            @else
+                                <div class="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center font-bold text-primary-dark">
+                                    {{ substr($borrowing->student->name ?? 'X', 0, 1) }}
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-800">{{ $borrowing->student->name ?? '-' }}</p>
+                                    <p class="text-gray-400 text-sm">
+                                        <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">Siswa</span>
+                                        {{ $borrowing->student_nis }} • {{ $borrowing->student->class ?? '' }}
+                                    </p>
+                                </div>
+                            @endif
                         </div>
                     </td>
                     <td class="px-6 py-4">

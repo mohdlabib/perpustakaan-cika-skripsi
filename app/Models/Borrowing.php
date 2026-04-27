@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Borrowing extends Model
 {
     protected $fillable = [
+        'borrower_type',
+        'borrower_name',
+        'borrower_info',
         'student_nis',
         'book_id',
         'book_copy_id',
@@ -58,6 +61,28 @@ class Borrowing extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Get borrower display name (student or teacher).
+     */
+    public function getBorrowerDisplayNameAttribute(): string
+    {
+        if ($this->borrower_type === 'teacher') {
+            return $this->borrower_name ?? 'Guru';
+        }
+        return $this->student->name ?? '-';
+    }
+
+    /**
+     * Get borrower display info (NIS or teacher info).
+     */
+    public function getBorrowerDisplayInfoAttribute(): string
+    {
+        if ($this->borrower_type === 'teacher') {
+            return $this->borrower_info ?? '-';
+        }
+        return ($this->student_nis ?? '-') . ' • ' . ($this->student->class ?? '');
     }
 
     /**

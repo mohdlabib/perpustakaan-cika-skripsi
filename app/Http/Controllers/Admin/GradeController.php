@@ -25,10 +25,13 @@ class GradeController extends Controller
             'name' => 'required|string|max:50',
             'level' => 'nullable|string|max:20',
             'academic_year' => 'nullable|integer|min:2000|max:2100',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable',
         ]);
         
-        Grade::create($request->all());
+        $data = $request->only(['name', 'level', 'academic_year']);
+        $data['is_active'] = $request->boolean('is_active');
+        
+        Grade::create($data);
         
         return redirect()->route('admin.grades.index')
             ->with('success', 'Angkatan berhasil ditambahkan.');
@@ -45,10 +48,13 @@ class GradeController extends Controller
             'name' => 'required|string|max:50',
             'level' => 'nullable|string|max:20',
             'academic_year' => 'nullable|integer|min:2000|max:2100',
-            'is_active' => 'boolean',
+            'is_active' => 'nullable',
         ]);
         
-        $grade->update($request->all());
+        $data = $request->only(['name', 'level', 'academic_year']);
+        $data['is_active'] = $request->boolean('is_active');
+        
+        $grade->update($data);
         
         return redirect()->route('admin.grades.index')
             ->with('success', 'Angkatan berhasil diperbarui.');

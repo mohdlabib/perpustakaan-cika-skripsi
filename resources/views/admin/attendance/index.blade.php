@@ -126,14 +126,30 @@
                 <div class="space-y-3">
                     @foreach($recentVisits as $visit)
                     <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                        <div class="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center font-bold text-primary-dark">
-                            {{ substr($visit->student->name ?? 'X', 0, 1) }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-800 truncate">{{ $visit->student->name ?? '-' }}</p>
-                            <p class="text-gray-500 text-sm">{{ $visit->student->nis ?? '-' }}</p>
-                        </div>
-                        <div class="text-right">
+                        @if($visit->visitor_type === 'guest')
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-700">
+                                {{ substr($visit->guest_name ?? 'T', 0, 1) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-800 truncate">{{ $visit->guest_name ?? 'Tamu' }}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-xs font-medium rounded">Tamu</span>
+                                    <span class="text-gray-500 text-xs truncate">{{ $visit->guest_institution ?? '-' }}</span>
+                                </div>
+                            </div>
+                        @else
+                            <div class="w-10 h-10 bg-primary-light rounded-full flex items-center justify-center font-bold text-primary-dark">
+                                {{ substr($visit->student->name ?? '?', 0, 1) }}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-800 truncate">{{ $visit->student->name ?? '-' }}</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">Siswa</span>
+                                    <span class="text-gray-500 text-xs">{{ $visit->student->nis ?? '-' }}</span>
+                                </div>
+                            </div>
+                        @endif
+                        <div class="text-right flex-shrink-0">
                             <p class="text-gray-800 font-medium">{{ $visit->visited_at->format('H:i') }}</p>
                             <p class="text-gray-400 text-xs">{{ $visit->visited_at->diffForHumans() }}</p>
                         </div>

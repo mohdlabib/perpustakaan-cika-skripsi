@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
 use App\Models\Book;
 use App\Models\Student;
+use App\Exports\BorrowingsExport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BorrowingController extends Controller
 {
@@ -26,7 +28,7 @@ class BorrowingController extends Controller
             }
         }
 
-        // Search by student name or book title
+        // Search by student name, teacher name, or book title
         if ($request->filled('search')) {
             $term = $request->search;
             $query->where(function ($q) use ($term) {
@@ -35,7 +37,7 @@ class BorrowingController extends Controller
                        ->orWhere('nis', 'like', "%{$term}%");
                 })->orWhereHas('book', function ($bq) use ($term) {
                     $bq->where('title', 'like', "%{$term}%");
-                });
+                })->orWhere('borrower_name', 'like', "%{$term}%");
             });
         }
 
@@ -61,36 +63,61 @@ class BorrowingController extends Controller
     }
 
     /**
-     * Store new borrowing.
+     * Store new borrowing (supports student and teacher).
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'student_nis' => 'required|exists:students_registry,nis',
+        $borrowerType = $request->input('borrower_type', 'student');
+
+        // Common validation
+        $rules = [
+            'borrower_type' => 'required|in:student,teacher',
             'book_id' => 'required|exists:books,id',
             'due_date' => 'required|date|after:today',
-        ]);
+        ];
 
-        $student = Student::find($validated['student_nis']);
+        // Type-specific validation
+        if ($borrowerType === 'teacher') {
+            $rules['borrower_name'] = 'required|string|max:255';
+            $rules['borrower_info'] = 'nullable|string|max:255';
+        } else {
+            $rules['student_nis'] = 'required|exists:students_registry,nis';
+        }
+
+        $validated = $request->validate($rules);
+
         $book = Book::find($validated['book_id']);
 
-        // Check if student can borrow
-        if (!$student->canBorrow()) {
-            return back()->withErrors(['student_nis' => 'Siswa sudah meminjam maksimal 3 buku.']);
+        // Check if book has available stock
+        if ($book->available_stock <= 0) {
+            return back()->withErrors(['book_id' => 'Stok buku habis, tidak dapat dipinjam.'])->withInput();
         }
 
-        // Check if book is available
-        if (!$book->is_available) {
-            return back()->withErrors(['book_id' => 'Buku tidak tersedia.']);
+        // Student-specific checks
+        if ($borrowerType === 'student') {
+            $student = Student::find($validated['student_nis']);
+
+            if (!$student->canBorrow()) {
+                return back()->withErrors(['student_nis' => 'Siswa sudah meminjam maksimal 3 buku.'])->withInput();
+            }
         }
 
-        Borrowing::create([
-            'student_nis' => $validated['student_nis'],
+        $borrowingData = [
+            'borrower_type' => $borrowerType,
             'book_id' => $validated['book_id'],
             'borrow_date' => now(),
             'due_date' => $validated['due_date'],
             'status' => 'borrowed',
-        ]);
+        ];
+
+        if ($borrowerType === 'teacher') {
+            $borrowingData['borrower_name'] = $validated['borrower_name'];
+            $borrowingData['borrower_info'] = $validated['borrower_info'] ?? null;
+        } else {
+            $borrowingData['student_nis'] = $validated['student_nis'];
+        }
+
+        Borrowing::create($borrowingData);
 
         return redirect()->route('admin.borrowings.index')
             ->with('success', 'Peminjaman berhasil dicatat.');
@@ -112,7 +139,7 @@ class BorrowingController extends Controller
         $borrowing->approve($request->due_date, auth()->id());
 
         return redirect()->route('admin.borrowings.index')
-            ->with('success', "Peminjaman oleh {$borrowing->student->name} berhasil disetujui.");
+            ->with('success', "Peminjaman oleh {$borrowing->borrower_display_name} berhasil disetujui.");
     }
 
     /**
@@ -131,7 +158,7 @@ class BorrowingController extends Controller
         $borrowing->reject($request->reason, auth()->id());
 
         return redirect()->route('admin.borrowings.index')
-            ->with('success', "Peminjaman oleh {$borrowing->student->name} ditolak.");
+            ->with('success', "Peminjaman oleh {$borrowing->borrower_display_name} ditolak.");
     }
 
     /**
@@ -244,5 +271,20 @@ class BorrowingController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="template-import-peminjaman.csv"',
         ]);
+    }
+
+    /**
+     * Export borrowings to Excel.
+     */
+    public function export(Request $request)
+    {
+        $status = $request->input('status');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        return Excel::download(
+            new BorrowingsExport($status, $startDate, $endDate),
+            'data-peminjaman-' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

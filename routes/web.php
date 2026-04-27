@@ -117,6 +117,7 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::put('/borrowings/{borrowing}/approve', [AdminBorrowingController::class, 'approve'])->name('borrowings.approve');
     Route::put('/borrowings/{borrowing}/reject', [AdminBorrowingController::class, 'reject'])->name('borrowings.reject');
     Route::post('/borrowings/import', [AdminBorrowingController::class, 'import'])->name('borrowings.import');
+    Route::get('/borrowings/export/download', [AdminBorrowingController::class, 'export'])->name('borrowings.export');
     Route::get('/borrowings/template/download', [AdminBorrowingController::class, 'downloadTemplate'])->name('borrowings.template');
     
     // Master Data

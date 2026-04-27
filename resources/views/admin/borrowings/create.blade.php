@@ -24,17 +24,50 @@
                 </div>
                 <div>
                     <h2 class="text-xl font-bold">Catat Peminjaman Baru</h2>
-                    <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa</p>
+                    <p class="text-white/70 text-sm">Catat peminjaman buku oleh siswa atau guru</p>
                 </div>
             </div>
         </div>
 
         <!-- Form -->
-        <form action="{{ route('admin.borrowings.store') }}" method="POST" class="p-8 space-y-6">
+        <form action="{{ route('admin.borrowings.store') }}" method="POST" class="p-8 space-y-6" x-data="{ borrowerType: '{{ old('borrower_type', 'student') }}' }">
             @csrf
             
-            <!-- Student Selection - Searchable -->
-            <div x-data="studentSelector()">
+            <!-- Borrower Type Toggle -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">
+                    <span class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Tipe Peminjam <span class="text-red-500">*</span>
+                    </span>
+                </label>
+                <input type="hidden" name="borrower_type" :value="borrowerType">
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" @click="borrowerType = 'student'"
+                        :class="borrowerType === 'student' ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-300' : 'border-gray-200 hover:bg-gray-50'"
+                        class="p-4 rounded-xl border transition cursor-pointer text-center">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        <span class="font-medium text-gray-800 block">Siswa</span>
+                        <span class="text-xs text-gray-500">Pilih dari daftar siswa</span>
+                    </button>
+                    <button type="button" @click="borrowerType = 'teacher'"
+                        :class="borrowerType === 'teacher' ? 'ring-2 ring-orange-500 bg-orange-50 border-orange-300' : 'border-gray-200 hover:bg-gray-50'"
+                        class="p-4 rounded-xl border transition cursor-pointer text-center">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                        <span class="font-medium text-gray-800 block">Guru</span>
+                        <span class="text-xs text-gray-500">Input nama guru manual</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Student Selection (shown when borrowerType is student) -->
+            <div x-show="borrowerType === 'student'" x-data="studentSelector()">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     <span class="flex items-center gap-2">
                         <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +77,7 @@
                     </span>
                 </label>
                 <div class="relative">
-                    <input type="hidden" name="student_nis" x-model="selectedId" required>
+                    <input type="hidden" name="student_nis" x-model="selectedId">
                     <div class="relative">
                         <input type="text" 
                             x-model="search"
@@ -111,6 +144,38 @@
                     </button>
                 </div>
                 @error('student_nis')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <!-- Teacher Input (shown when borrowerType is teacher) -->
+            <div x-show="borrowerType === 'teacher'" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Nama Guru <span class="text-red-500">*</span>
+                        </span>
+                    </label>
+                    <input type="text" name="borrower_name" value="{{ old('borrower_name') }}"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                        placeholder="Masukkan nama lengkap guru...">
+                    @error('borrower_name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Info Guru (NIP / Mata Pelajaran)
+                        </span>
+                    </label>
+                    <input type="text" name="borrower_info" value="{{ old('borrower_info') }}"
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                        placeholder="Contoh: NIP 198501012010 / Matematika">
+                    @error('borrower_info')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
             </div>
             
             <!-- Book Selection - Searchable -->

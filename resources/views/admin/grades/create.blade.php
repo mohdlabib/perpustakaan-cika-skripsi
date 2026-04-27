@@ -51,6 +51,7 @@
             </div>
             
             <div class="flex items-center gap-3">
+                <input type="hidden" name="is_active" value="0">
                 <input type="checkbox" name="is_active" value="1" id="is_active" 
                     {{ old('is_active', $grade->is_active ?? true) ? 'checked' : '' }}
                     class="w-5 h-5 text-primary-dark rounded cursor-pointer">

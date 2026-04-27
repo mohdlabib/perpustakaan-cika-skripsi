@@ -11,18 +11,43 @@ use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 use Illuminate\Support\Facades\Hash;
 
-class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsOnFailure
+class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsOnFailure, WithCustomCsvSettings
 {
     use SkipsErrors, SkipsFailures;
+
+    public function getCsvSettings(): array
+    {
+        return [
+            'input_encoding' => 'UTF-8',
+            'delimiter' => ',',
+        ];
+    }
 
     protected $imported = 0;
     protected $updated = 0;
     protected $skipped = 0;
 
+    /**
+     * Normalize row keys to handle various header formats.
+     */
+    private function normalizeRow(array $row): array
+    {
+        $normalized = [];
+        foreach ($row as $key => $value) {
+            $normalizedKey = str_replace(' ', '_', strtolower(trim($key)));
+            $normalized[$normalizedKey] = $value;
+        }
+        return $normalized;
+    }
+
     public function model(array $row)
     {
+        // Normalize row keys for consistency
+        $row = $this->normalizeRow($row);
+
         $nis = trim($row['nis']);
         
         // Find or create grade
