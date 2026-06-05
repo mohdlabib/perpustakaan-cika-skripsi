@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Student;
 use App\Exports\BorrowingsExport;
 use Illuminate\Http\Request;
@@ -51,9 +52,10 @@ class BorrowingController extends Controller
      */
     public function create()
     {
-        $students = Student::orderBy('name')->get()->map(function($s) {
-            return ['nis' => $s->nis, 'name' => $s->name, 'class' => $s->class];
-        })->values();
+        $students = Student::whereHas('grade', fn($q) => $q->where('is_active', true))
+            ->orderBy('name')->get()->map(function($s) {
+                return ['nis' => $s->nis, 'name' => $s->name, 'class' => $s->class];
+            })->values();
         
         $books = Book::available()->orderBy('title')->get()->map(function($b) {
             return ['id' => $b->id, 'title' => $b->title, 'author' => $b->author, 'available_stock' => $b->available_stock];
@@ -88,8 +90,14 @@ class BorrowingController extends Controller
 
         $book = Book::find($validated['book_id']);
 
-        // Check if book has available stock
-        if ($book->available_stock <= 0) {
+        // Find an available copy (condition='baik', is_available=true, not currently borrowed)
+        $availableCopy = $book->copies()
+            ->where('condition', 'baik')
+            ->where('is_available', true)
+            ->whereDoesntHave('borrowings', fn($q) => $q->where('status', 'borrowed'))
+            ->first();
+
+        if (!$availableCopy) {
             return back()->withErrors(['book_id' => 'Stok buku habis, tidak dapat dipinjam.'])->withInput();
         }
 
@@ -105,6 +113,7 @@ class BorrowingController extends Controller
         $borrowingData = [
             'borrower_type' => $borrowerType,
             'book_id' => $validated['book_id'],
+            'book_copy_id' => $availableCopy->id,
             'borrow_date' => now(),
             'due_date' => $validated['due_date'],
             'status' => 'borrowed',
@@ -118,6 +127,9 @@ class BorrowingController extends Controller
         }
 
         Borrowing::create($borrowingData);
+
+        // Mark the copy as unavailable
+        $availableCopy->update(['is_available' => false]);
 
         return redirect()->route('admin.borrowings.index')
             ->with('success', 'Peminjaman berhasil dicatat.');
@@ -136,7 +148,18 @@ class BorrowingController extends Controller
             return back()->with('error', 'Peminjaman ini sudah diproses sebelumnya.');
         }
 
-        $borrowing->approve($request->due_date, auth()->id());
+        // Find an available copy for this book
+        $availableCopy = $borrowing->book->copies()
+            ->where('condition', 'baik')
+            ->where('is_available', true)
+            ->whereDoesntHave('borrowings', fn($q) => $q->where('status', 'borrowed'))
+            ->first();
+
+        if (!$availableCopy) {
+            return back()->with('error', 'Stok buku habis, tidak dapat disetujui.');
+        }
+
+        $borrowing->approve($request->due_date, auth()->id(), $availableCopy);
 
         return redirect()->route('admin.borrowings.index')
             ->with('success', "Peminjaman oleh {$borrowing->borrower_display_name} berhasil disetujui.");
@@ -177,7 +200,7 @@ class BorrowingController extends Controller
      */
     public function show(Borrowing $borrowing)
     {
-        $borrowing->load(['student', 'book.category']);
+        $borrowing->load(['student', 'book.category', 'bookCopy']);
         return view('admin.borrowings.show', compact('borrowing'));
     }
 
@@ -237,12 +260,21 @@ class BorrowingController extends Controller
         ]);
 
         try {
-            $import = new \App\Imports\BorrowingsImport();
-            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+            $file = $request->file('file');
+            $import = new \App\Imports\BorrowingsImport($file->getRealPath());
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
 
             $msg = "Import berhasil! {$import->getImportedCount()} peminjaman ditambahkan.";
             if ($import->getSkippedCount() > 0) {
                 $msg .= " {$import->getSkippedCount()} baris di-skip.";
+            }
+
+            // Report failures
+            $failures = $import->failures();
+            if ($failures->isNotEmpty()) {
+                $failCount = $failures->count();
+                $firstError = $failures->first()->errors()[0] ?? 'Unknown';
+                $msg .= " {$failCount} baris gagal validasi (contoh: {$firstError}).";
             }
 
             return redirect()->route('admin.borrowings.index')->with('success', $msg);

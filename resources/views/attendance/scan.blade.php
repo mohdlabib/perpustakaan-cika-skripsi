@@ -276,18 +276,59 @@ function attendancePage() {
         
         // QR Scanner methods
         async startScanner() {
-            this.scanning = true;
             this.scanSuccess = false;
             this.scanError = false;
+            this.scanErrorMessage = '';
             
-            this.scanner = new Html5Qrcode("qr-reader");
+            // Check if browser supports camera
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                this.scanError = true;
+                
+                // Check if page is not served over HTTPS
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    this.scanErrorMessage = 'Akses kamera memerlukan koneksi HTTPS. Halaman ini diakses melalui HTTP, sehingga kamera tidak dapat digunakan. Hubungi admin untuk mengaktifkan HTTPS, atau gunakan mode Demo di bawah.';
+                } else {
+                    this.scanErrorMessage = 'Browser Anda tidak mendukung akses kamera. Gunakan browser modern seperti Chrome atau Firefox, atau gunakan mode Demo di bawah.';
+                }
+                return;
+            }
             
-            const config = {
-                qrbox: { width: 250, height: 250 },
-                fps: 10,
-            };
+            // Request camera permission explicitly BEFORE starting scanner
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' } 
+                });
+                // Permission granted — stop the test stream immediately
+                stream.getTracks().forEach(track => track.stop());
+            } catch (permErr) {
+                console.error('Camera permission error:', permErr);
+                this.scanError = true;
+                
+                if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+                    this.scanErrorMessage = 'Izin kamera ditolak. Silakan berikan izin kamera di pengaturan browser Anda (klik ikon 🔒 di address bar), lalu refresh halaman ini.';
+                } else if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
+                    this.scanErrorMessage = 'Tidak ditemukan kamera pada perangkat ini. Pastikan perangkat memiliki kamera yang berfungsi.';
+                } else if (permErr.name === 'NotReadableError' || permErr.name === 'TrackStartError') {
+                    this.scanErrorMessage = 'Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi lain yang menggunakan kamera, lalu coba lagi.';
+                } else if (permErr.name === 'OverconstrainedError') {
+                    this.scanErrorMessage = 'Kamera tidak mendukung konfigurasi yang diminta. Coba gunakan browser lain.';
+                } else {
+                    this.scanErrorMessage = 'Gagal mengakses kamera: ' + (permErr.message || 'Error tidak diketahui') + '. Gunakan mode Demo di bawah sebagai alternatif.';
+                }
+                return;
+            }
+            
+            // Camera permission granted, now start the QR scanner
+            this.scanning = true;
             
             try {
+                this.scanner = new Html5Qrcode("qr-reader");
+                
+                const config = {
+                    qrbox: { width: 250, height: 250 },
+                    fps: 10,
+                };
+                
                 await this.scanner.start(
                     { facingMode: "environment" },
                     config,
@@ -297,9 +338,9 @@ function attendancePage() {
                     (error) => {}
                 );
             } catch (err) {
-                console.error("Camera error:", err);
+                console.error("Scanner start error:", err);
                 this.scanError = true;
-                this.scanErrorMessage = 'Gagal mengakses kamera. Pastikan izin kamera diberikan.';
+                this.scanErrorMessage = 'Gagal memulai scanner QR. ' + (err.message || 'Coba refresh halaman dan coba lagi.');
                 this.scanning = false;
             }
         },
@@ -307,17 +348,23 @@ function attendancePage() {
         async stopScanner() {
             if (this.scanner) {
                 try {
-                    await this.scanner.stop();
+                    const state = this.scanner.getState();
+                    if (state === Html5QrcodeScannerState.SCANNING || state === Html5QrcodeScannerState.PAUSED) {
+                        await this.scanner.stop();
+                    }
                     this.scanner.clear();
                 } catch (err) {
                     console.error("Stop scanner error:", err);
+                    // Force cleanup
+                    try { this.scanner.clear(); } catch(e) {}
                 }
+                this.scanner = null;
             }
             this.scanning = false;
         },
         
         async handleScan(token) {
-            this.stopScanner();
+            await this.stopScanner();
             
             try {
                 const response = await axios.post('{{ route("attendance.store") }}', { token });
@@ -327,7 +374,7 @@ function attendancePage() {
                 }
             } catch (error) {
                 this.scanError = true;
-                this.scanErrorMessage = error.response?.data?.message || 'Terjadi kesalahan';
+                this.scanErrorMessage = error.response?.data?.message || 'Terjadi kesalahan saat memproses scan.';
             }
         },
         
@@ -339,6 +386,7 @@ function attendancePage() {
             this.scanning = false;
             this.scanSuccess = false;
             this.scanError = false;
+            this.scanErrorMessage = '';
         },
         
         // Guest form methods

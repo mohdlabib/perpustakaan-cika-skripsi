@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\Visit;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class AttendanceController extends Controller
@@ -54,12 +55,21 @@ class AttendanceController extends Controller
         }
 
         // Check if student exists
-        $student = Student::find($nis);
+        $student = Student::with('grade')->find($nis);
         if (!$student) {
             return response()->json([
                 'success' => false,
                 'message' => 'Data siswa tidak ditemukan.',
             ], 404);
+        }
+
+        // Check if student's grade is active
+        if (!$student->grade || !$student->grade->is_active) {
+            session()->forget(['student', 'student_nis']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Angkatan Anda sudah tidak aktif. Hubungi admin.',
+            ], 403);
         }
 
         // Check if already visited today
@@ -79,7 +89,7 @@ class AttendanceController extends Controller
             'message' => "Selamat datang di Perpustakaan, {$student->name}!",
             'visit' => [
                 'id' => $visit->id,
-                'visited_at' => $visit->visited_at->format('d M Y H:i'),
+                'visited_at' => $visit->visited_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB',
                 'student_name' => $student->name,
             ],
         ]);
@@ -107,7 +117,7 @@ class AttendanceController extends Controller
             'message' => "Selamat datang, {$request->guest_name}! Kunjungan berhasil dicatat.",
             'visit' => [
                 'id' => $visit->id,
-                'visited_at' => $visit->visited_at->format('d M Y H:i'),
+                'visited_at' => $visit->visited_at->timezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB',
                 'guest_name' => $request->guest_name,
             ],
         ]);
@@ -134,7 +144,7 @@ class AttendanceController extends Controller
      */
     private function generateDailyToken()
     {
-        $date = now()->format('Y-m-d');
+        $date = Carbon::now('Asia/Jakarta')->format('Y-m-d');
         return 'PERPUS_SMAN8_' . strtoupper(md5('attendance_' . $date . '_secret'));
     }
 }

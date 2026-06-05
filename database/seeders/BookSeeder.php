@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 
@@ -217,8 +218,22 @@ class BookSeeder extends Seeder
             
             $category = Category::where('slug', $categorySlug)->first();
             if ($category) {
+                $stock = $book['stock'] ?? 1;
+                $shelfLocation = $book['shelf_location'] ?? null;
+                unset($book['stock'], $book['shelf_location']);
+
                 $book['category_id'] = $category->id;
-                Book::create($book);
+                $createdBook = Book::create($book);
+
+                for ($i = 1; $i <= $stock; $i++) {
+                    BookCopy::create([
+                        'book_id'        => $createdBook->id,
+                        'shelf_location' => $shelfLocation,
+                        'condition'      => 'baik',
+                        'is_available'   => true,
+                        'copy_code'      => strtoupper(substr($createdBook->title, 0, 3)) . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                    ]);
+                }
             }
         }
     }

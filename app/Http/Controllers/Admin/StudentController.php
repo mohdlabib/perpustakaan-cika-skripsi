@@ -118,12 +118,30 @@ class StudentController extends Controller
         ]);
 
         try {
-            $import = new \App\Imports\StudentsImport();
-            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+            $file = $request->file('file');
+            $import = new \App\Imports\StudentsImport($file->getRealPath());
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
 
             $msg = "Import berhasil! {$import->getImportedCount()} siswa baru ditambahkan.";
             if ($import->getUpdatedCount() > 0) {
                 $msg .= " {$import->getUpdatedCount()} siswa diperbarui.";
+            }
+            if ($import->getSkippedCount() > 0) {
+                $msg .= " {$import->getSkippedCount()} baris di-skip.";
+            }
+
+            // Report validation failures
+            $failures = $import->failures();
+            if ($failures->isNotEmpty()) {
+                $failCount = $failures->count();
+                $firstError = $failures->first()->errors()[0] ?? 'Unknown';
+                $msg .= " {$failCount} baris gagal validasi (contoh: {$firstError}).";
+            }
+
+            // If nothing was imported, show a warning
+            if ($import->getImportedCount() === 0 && $import->getUpdatedCount() === 0) {
+                return redirect()->route('admin.students.index')
+                    ->with('error', 'Tidak ada siswa yang berhasil di-import. Pastikan file menggunakan header yang benar (NIS, Nama, Kelas, dll). Download template untuk referensi.');
             }
 
             return redirect()->route('admin.students.index')->with('success', $msg);

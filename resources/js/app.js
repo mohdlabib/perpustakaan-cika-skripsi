@@ -5,13 +5,6 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 Alpine.start();
 
-// Axios CSRF token setup
-document.addEventListener('DOMContentLoaded', () => {
-    const token = document.querySelector('meta[name="csrf-token"]');
-    if (token) {
-        window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
-    }
-});
 
 // Simple notification helper
 window.notify = {

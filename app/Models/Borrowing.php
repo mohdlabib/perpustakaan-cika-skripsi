@@ -147,16 +147,25 @@ class Borrowing extends Model
 
     /**
      * Approve the borrowing request.
+     * Assigns an available BookCopy and marks it as unavailable.
      */
-    public function approve($dueDate, $adminId): void
+    public function approve($dueDate, $adminId, ?BookCopy $copy = null): void
     {
-        $this->update([
+        $updateData = [
             'status' => 'borrowed',
             'borrow_date' => now(),
             'due_date' => $dueDate,
             'approved_at' => now(),
             'approved_by' => $adminId,
-        ]);
+        ];
+
+        // Assign the specific copy if provided
+        if ($copy) {
+            $updateData['book_copy_id'] = $copy->id;
+            $copy->update(['is_available' => false]);
+        }
+
+        $this->update($updateData);
     }
 
     /**
@@ -164,6 +173,11 @@ class Borrowing extends Model
      */
     public function reject($reason, $adminId): void
     {
+        // Release the copy if one was pre-assigned
+        if ($this->book_copy_id && $this->bookCopy) {
+            $this->bookCopy->update(['is_available' => true]);
+        }
+
         $this->update([
             'status' => 'rejected',
             'approved_at' => now(),
@@ -173,7 +187,7 @@ class Borrowing extends Model
     }
 
     /**
-     * Mark as returned.
+     * Mark as returned. Releases the BookCopy back to available stock.
      */
     public function markAsReturned(): void
     {
@@ -181,6 +195,14 @@ class Borrowing extends Model
             'status' => 'returned',
             'return_date' => now(),
         ]);
+
+        // Release the book copy back to available stock
+        if ($this->book_copy_id && $this->bookCopy) {
+            // Only set available if the copy is still in good condition
+            if ($this->bookCopy->condition === 'baik') {
+                $this->bookCopy->update(['is_available' => true]);
+            }
+        }
     }
 }
 

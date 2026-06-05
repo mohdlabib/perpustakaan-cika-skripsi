@@ -61,9 +61,11 @@ Route::prefix('login')->group(function () {
 });
 Route::post('/logout/student', [StudentLoginController::class, 'logout'])->name('student.logout');
 
-// Student Profile
-Route::get('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('student.profile');
-Route::put('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
+// Student Profile (protected by grade check)
+Route::middleware('student.grade.active')->group(function () {
+    Route::get('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'edit'])->name('student.profile');
+    Route::put('/student/profile', [\App\Http\Controllers\StudentProfileController::class, 'update'])->name('student.profile.update');
+});
 
 // Public Catalog
 Route::prefix('catalog')->group(function () {
@@ -75,13 +77,13 @@ Route::prefix('catalog')->group(function () {
 // Attendance (QR Scanning)
 Route::prefix('attendance')->group(function () {
     Route::get('/scan', [AttendanceController::class, 'scan'])->name('attendance.scan');
-    Route::post('/store', [AttendanceController::class, 'store'])->name('attendance.store');
+    Route::post('/store', [AttendanceController::class, 'store'])->middleware('student.grade.active')->name('attendance.store');
     Route::post('/store-guest', [AttendanceController::class, 'storeGuest'])->name('attendance.store-guest');
     Route::get('/stats', [AttendanceController::class, 'todayStats'])->name('attendance.stats');
 });
 
-// Student Borrowing
-Route::prefix('borrowings')->group(function () {
+// Student Borrowing (protected by grade check)
+Route::prefix('borrowings')->middleware('student.grade.active')->group(function () {
     Route::post('/', [BorrowingController::class, 'store'])->name('borrowings.store');
     Route::get('/my-books', [BorrowingController::class, 'myBooks'])->name('borrowings.my-books');
 });

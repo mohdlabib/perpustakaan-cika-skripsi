@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Visit extends Model
 {
@@ -52,30 +53,39 @@ class Visit extends Model
     }
 
     /**
-     * Check if student already visited today.
+     * Get visited_at formatted in WIB timezone.
+     */
+    public function getVisitedAtWibAttribute(): string
+    {
+        if (!$this->visited_at) return '-';
+        return $this->visited_at->timezone('Asia/Jakarta')->format('d/m/Y H:i') . ' WIB';
+    }
+
+    /**
+     * Check if student already visited today (WIB timezone).
      */
     public static function hasVisitedToday(string $nis): bool
     {
         return static::where('student_nis', $nis)
-            ->whereDate('visited_at', today())
+            ->whereDate('visited_at', Carbon::today('Asia/Jakarta'))
             ->exists();
     }
 
     /**
-     * Record a student visit.
+     * Record a student visit with explicit WIB timezone.
      */
     public static function recordVisit(string $nis, ?string $token = null): static
     {
         return static::create([
             'visitor_type' => 'student',
             'student_nis' => $nis,
-            'visited_at' => now(),
+            'visited_at' => Carbon::now('Asia/Jakarta'),
             'scan_token' => $token,
         ]);
     }
 
     /**
-     * Record a guest visit.
+     * Record a guest visit with explicit WIB timezone.
      */
     public static function recordGuestVisit(string $name, ?string $institution = null, ?string $purpose = null): static
     {
@@ -84,36 +94,38 @@ class Visit extends Model
             'guest_name' => $name,
             'guest_institution' => $institution,
             'guest_purpose' => $purpose,
-            'visited_at' => now(),
+            'visited_at' => Carbon::now('Asia/Jakarta'),
         ]);
     }
 
     /**
-     * Scope for today's visits.
+     * Scope for today's visits (WIB timezone).
      */
     public function scopeToday($query)
     {
-        return $query->whereDate('visited_at', today());
+        return $query->whereDate('visited_at', Carbon::today('Asia/Jakarta'));
     }
 
     /**
-     * Scope for this week's visits.
+     * Scope for this week's visits (WIB timezone).
      */
     public function scopeThisWeek($query)
     {
+        $now = Carbon::now('Asia/Jakarta');
         return $query->whereBetween('visited_at', [
-            now()->startOfWeek(),
-            now()->endOfWeek(),
+            $now->copy()->startOfWeek(),
+            $now->copy()->endOfWeek(),
         ]);
     }
 
     /**
-     * Scope for this month's visits.
+     * Scope for this month's visits (WIB timezone).
      */
     public function scopeThisMonth($query)
     {
-        return $query->whereMonth('visited_at', now()->month)
-                     ->whereYear('visited_at', now()->year);
+        $now = Carbon::now('Asia/Jakarta');
+        return $query->whereMonth('visited_at', $now->month)
+                     ->whereYear('visited_at', $now->year);
     }
 
     /**

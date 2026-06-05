@@ -63,14 +63,36 @@ class GradeController extends Controller
     public function destroy(Grade $grade)
     {
         try {
-            // Delete all students in this grade first
-            $deletedStudents = $grade->students()->delete();
+            $studentNisArray = $grade->students()->pluck('nis')->toArray();
+            $deletedStudents = count($studentNisArray);
+            
+            if (!empty($studentNisArray)) {
+                // Release any book copies that are currently borrowed by these students
+                $activeBorrowings = \App\Models\Borrowing::whereIn('student_nis', $studentNisArray)
+                    ->where('status', 'borrowed')
+                    ->get();
+                
+                foreach ($activeBorrowings as $borrowing) {
+                    if ($borrowing->book_copy_id && $borrowing->bookCopy) {
+                        $borrowing->bookCopy->update(['is_available' => true]);
+                    }
+                }
+
+                // Delete all borrowings for these students
+                \App\Models\Borrowing::whereIn('student_nis', $studentNisArray)->delete();
+                
+                // Delete all visits for these students
+                \App\Models\Visit::whereIn('student_nis', $studentNisArray)->delete();
+                
+                // Delete all students in this grade
+                $grade->students()->delete();
+            }
             
             $grade->delete();
             
             $message = 'Angkatan berhasil dihapus.';
             if ($deletedStudents > 0) {
-                $message = "Angkatan berhasil dihapus beserta {$deletedStudents} siswa yang terdaftar.";
+                $message = "Angkatan berhasil dihapus beserta {$deletedStudents} siswa dan seluruh data terkait (peminjaman & kunjungan).";
             }
             
             return redirect()->route('admin.grades.index')

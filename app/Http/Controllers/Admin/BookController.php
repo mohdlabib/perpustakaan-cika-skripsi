@@ -230,15 +230,30 @@ class BookController extends Controller
         ]);
 
         try {
-            $import = new \App\Imports\BooksImport();
-            Excel::import($import, $request->file('file'));
+            $file = $request->file('file');
+            $import = new \App\Imports\BooksImport($file->getRealPath());
+            Excel::import($import, $file);
 
             $msg = "Import berhasil! {$import->getImportedCount()} buku baru ditambahkan.";
             if ($import->getUpdatedCount() > 0) {
                 $msg .= " {$import->getUpdatedCount()} eksemplar ditambahkan ke buku existing.";
             }
             if ($import->getSkippedCount() > 0) {
-                $msg .= " {$import->getSkippedCount()} baris di-skip.";
+                $msg .= " {$import->getSkippedCount()} baris di-skip (judul kosong).";
+            }
+
+            // Report validation failures
+            $failures = $import->failures();
+            if ($failures->isNotEmpty()) {
+                $failCount = $failures->count();
+                $firstError = $failures->first()->errors()[0] ?? 'Unknown';
+                $msg .= " {$failCount} baris gagal validasi (contoh: {$firstError}).";
+            }
+
+            // If nothing was imported, show a warning
+            if ($import->getImportedCount() === 0 && $import->getUpdatedCount() === 0) {
+                return redirect()->route('admin.books.index')
+                    ->with('error', 'Tidak ada buku yang berhasil di-import. Pastikan file menggunakan header yang benar (Judul, Pengarang, ISBN, dll). Download template untuk referensi.');
             }
 
             return redirect()->route('admin.books.index')->with('success', $msg);

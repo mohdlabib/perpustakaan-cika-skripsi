@@ -97,7 +97,7 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'F' => 12,  // Tahun
             'G' => 18,  // Kategori
             'H' => 12,  // Klasifikasi
-            'I' => 12,  // No Panggil
+            'I' => 14,  // No Panggil
             'J' => 15,  // Edisi
             'K' => 14,  // Total
             'L' => 12,  // Tersedia
@@ -108,19 +108,8 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
 
     public function styles(Worksheet $sheet)
     {
-        return [
-            1 => [
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '2E4A35'],
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical' => Alignment::VERTICAL_CENTER,
-                ],
-            ],
-        ];
+        // Styles applied in registerEvents after row insertion
+        return [];
     }
 
     public function title(): string
@@ -133,25 +122,27 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastRow = $sheet->getHighestRow();
                 $lastColumn = 'N';
                 
-                // Add title header
+                // Add title header (4 rows)
                 $sheet->insertNewRowBefore(1, 4);
-                $sheet->mergeCells('A1:N1');
+                $sheet->mergeCells("A1:{$lastColumn}1");
                 $sheet->setCellValue('A1', 'LAPORAN DATA BUKU PERPUSTAKAAN');
-                $sheet->mergeCells('A2:N2');
-                $sheet->setCellValue('A2', 'PERPUSTAKAAN SMAN 8 PEKANBARU');
-                $sheet->mergeCells('A3:N3');
-                $sheet->setCellValue('A3', 'Tanggal Export: ' . now()->format('d F Y H:i'));
+                $sheet->mergeCells("A2:{$lastColumn}2");
+                $sheet->setCellValue('A2', 'PERPUSTAKAAN JENDELA ILMU');
+                $sheet->mergeCells("A3:{$lastColumn}3");
+                $sheet->setCellValue('A3', 'Tanggal Export: ' . now()->format('d F Y H:i') . ' WIB');
                 
-                // Style title
+                // Recalculate lastRow after insert
+                $lastRow = $sheet->getHighestRow();
+                
+                // Style title rows
                 $sheet->getStyle('A1')->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '2E4A35']],
+                    'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => '1B5E20']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 $sheet->getStyle('A2')->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 12],
+                    'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => '2E7D32']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 $sheet->getStyle('A3')->applyFromArray([
@@ -159,38 +150,119 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
                 ]);
                 
-                // Border for data
-                $dataRange = 'A5:' . $lastColumn . $lastRow;
-                $sheet->getStyle($dataRange)->applyFromArray([
+                // Row 5 is header row
+                $headerRow = 5;
+                
+                // Style header row
+                $sheet->getStyle("A{$headerRow}:{$lastColumn}{$headerRow}")->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => '2E7D32'],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                        'wrapText' => true,
+                    ],
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['rgb' => 'CCCCCC'],
+                            'color' => ['rgb' => '1B5E20'],
                         ],
                     ],
-                    'alignment' => [
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
                 ]);
+                $sheet->getRowDimension($headerRow)->setRowHeight(28);
                 
-                // Center align number columns
-                $sheet->getStyle('A5:A' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('F5:F' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('K5:N' . $lastRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                // Style data rows
+                $dataStartRow = $headerRow + 1;
+                if ($dataStartRow <= $lastRow) {
+                    $sheet->getStyle("A{$dataStartRow}:{$lastColumn}{$lastRow}")->applyFromArray([
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                                'color' => ['rgb' => 'D1D5DB'],
+                            ],
+                        ],
+                        'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                            'wrapText' => true,
+                        ],
+                    ]);
+                    
+                    // Alternating row colors (zebra stripe)
+                    for ($row = $dataStartRow; $row <= $lastRow; $row++) {
+                        if (($row - $dataStartRow) % 2 === 1) {
+                            $sheet->getStyle("A{$row}:{$lastColumn}{$row}")->applyFromArray([
+                                'fill' => [
+                                    'fillType' => Fill::FILL_SOLID,
+                                    'startColor' => ['rgb' => 'F1F8E9'],
+                                ],
+                            ]);
+                        }
+                    }
+                    
+                    // Center align number/code columns
+                    $sheet->getStyle("A{$dataStartRow}:A{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("F{$dataStartRow}:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("H{$dataStartRow}:I{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("K{$dataStartRow}:N{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    
+                    // Highlight "Tersedia = 0" cells in red
+                    for ($row = $dataStartRow; $row <= $lastRow; $row++) {
+                        $available = $sheet->getCell("L{$row}")->getValue();
+                        if ($available === 0 || $available === '0') {
+                            $sheet->getStyle("L{$row}")->applyFromArray([
+                                'font' => ['color' => ['rgb' => 'DC2626'], 'bold' => true],
+                            ]);
+                        }
+                        
+                        // Highlight rusak/hilang > 0
+                        $damaged = $sheet->getCell("N{$row}")->getValue();
+                        if ($damaged > 0) {
+                            $sheet->getStyle("N{$row}")->applyFromArray([
+                                'font' => ['color' => ['rgb' => 'EA580C'], 'bold' => true],
+                                'fill' => [
+                                    'fillType' => Fill::FILL_SOLID,
+                                    'startColor' => ['rgb' => 'FFF7ED'],
+                                ],
+                            ]);
+                        }
+                    }
+                }
                 
                 // Add summary at bottom
                 $summaryRow = $lastRow + 2;
-                $sheet->setCellValue('A' . $summaryRow, 'RINGKASAN:');
-                $sheet->getStyle('A' . $summaryRow)->getFont()->setBold(true);
+                $sheet->setCellValue("A{$summaryRow}", 'RINGKASAN:');
+                $sheet->getStyle("A{$summaryRow}")->applyFromArray([
+                    'font' => ['bold' => true, 'size' => 11, 'color' => ['rgb' => '1B5E20']],
+                ]);
                 
                 $totalBooks = Book::count();
                 $totalCopies = BookCopy::where('condition', '!=', 'hilang')->count();
                 $totalBorrowed = Borrowing::where('status', 'borrowed')->count();
+                $totalDamaged = BookCopy::whereIn('condition', ['rusak', 'hilang'])->count();
                 
-                $sheet->setCellValue('A' . ($summaryRow + 1), 'Total Judul Buku: ' . $totalBooks);
-                $sheet->setCellValue('A' . ($summaryRow + 2), 'Total Eksemplar: ' . $totalCopies);
-                $sheet->setCellValue('A' . ($summaryRow + 3), 'Total Dipinjam: ' . $totalBorrowed);
-                $sheet->setCellValue('A' . ($summaryRow + 4), 'Total Tersedia: ' . ($totalCopies - $totalBorrowed));
+                $summaryData = [
+                    ['Total Judul Buku', $totalBooks],
+                    ['Total Eksemplar', $totalCopies],
+                    ['Total Dipinjam', $totalBorrowed],
+                    ['Total Tersedia', max(0, $totalCopies - $totalBorrowed)],
+                    ['Total Rusak/Hilang', $totalDamaged],
+                ];
+                
+                foreach ($summaryData as $i => $item) {
+                    $r = $summaryRow + 1 + $i;
+                    $sheet->setCellValue("A{$r}", $item[0]);
+                    $sheet->setCellValue("C{$r}", ': ' . $item[1]);
+                    $sheet->getStyle("A{$r}")->getFont()->setBold(true);
+                }
+                
+                // Print setup
+                $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+                $sheet->getPageSetup()->setFitToWidth(1);
+                $sheet->getPageSetup()->setFitToHeight(0);
+                $sheet->getPageMargins()->setTop(0.5)->setBottom(0.5)->setLeft(0.3)->setRight(0.3);
                 
                 // Freeze header row
                 $sheet->freezePane('A6');

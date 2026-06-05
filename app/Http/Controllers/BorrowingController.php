@@ -42,8 +42,8 @@ class BorrowingController extends Controller
             ], 400);
         }
 
-        // Check if book is available
-        if (!$book->is_available) {
+        // Check if book is available (has available copies)
+        if ($book->available_stock <= 0) {
             return response()->json([
                 'success' => false,
                 'message' => 'Maaf, buku ini sedang tidak tersedia.',

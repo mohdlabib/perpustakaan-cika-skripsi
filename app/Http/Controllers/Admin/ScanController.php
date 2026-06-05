@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Student;
 use App\Models\Borrowing;
 use Illuminate\Http\Request;
@@ -22,14 +23,22 @@ class ScanController extends Controller
             'type' => 'required|in:book,student,return',
         ]);
         
-        $code = $request->code;
+        $code = trim($request->code);
         $type = $request->type;
         
         if ($type === 'book') {
-            // Search book by ISBN or item_code
-            $book = Book::where('isbn', $code)
-                ->orWhere('item_code', $code)
-                ->first();
+            // Search book by ISBN first
+            $book = Book::where('isbn', $code)->first();
+            
+            // If not found by ISBN, search by copy_code in book_copies
+            if (!$book) {
+                $copy = BookCopy::where('copy_code', $code)
+                    ->orWhere('inventory_code', $code)
+                    ->first();
+                if ($copy) {
+                    $book = $copy->book;
+                }
+            }
             
             if (!$book) {
                 return response()->json([
@@ -89,10 +98,18 @@ class ScanController extends Controller
         }
         
         if ($type === 'return') {
-            // Find active borrowing by book ISBN/code
-            $book = Book::where('isbn', $code)
-                ->orWhere('item_code', $code)
-                ->first();
+            // Find active borrowing by book ISBN or copy_code
+            $book = Book::where('isbn', $code)->first();
+            $bookCopy = null;
+            
+            if (!$book) {
+                $bookCopy = BookCopy::where('copy_code', $code)
+                    ->orWhere('inventory_code', $code)
+                    ->first();
+                if ($bookCopy) {
+                    $book = $bookCopy->book;
+                }
+            }
             
             if (!$book) {
                 return response()->json([
@@ -101,10 +118,17 @@ class ScanController extends Controller
                 ]);
             }
             
-            $borrowing = Borrowing::with('student')
-                ->where('book_id', $book->id)
-                ->where('status', 'borrowed')
-                ->first();
+            // Find the active borrowing - prefer matching by book_copy_id if we found a specific copy
+            $borrowingQuery = Borrowing::with('student')
+                ->where('status', 'borrowed');
+            
+            if ($bookCopy) {
+                $borrowingQuery->where('book_copy_id', $bookCopy->id);
+            } else {
+                $borrowingQuery->where('book_id', $book->id);
+            }
+            
+            $borrowing = $borrowingQuery->first();
             
             if (!$borrowing) {
                 return response()->json([
@@ -113,20 +137,21 @@ class ScanController extends Controller
                 ]);
             }
             
-            // Process return
-            $borrowing->update([
-                'status' => 'returned',
-                'return_date' => now(),
-            ]);
+            // Process return via model method (handles BookCopy release)
+            $borrowing->markAsReturned();
+            
+            $borrowerName = $borrowing->borrower_type === 'teacher' 
+                ? ($borrowing->borrower_name ?? 'Guru') 
+                : ($borrowing->student->name ?? '-');
             
             return response()->json([
                 'success' => true,
                 'type' => 'return',
-                'message' => "Buku '{$book->title}' berhasil dikembalikan oleh {$borrowing->student->name}.",
+                'message' => "Buku '{$book->title}' berhasil dikembalikan oleh {$borrowerName}.",
                 'data' => [
                     'book_title' => $book->title,
-                    'student_name' => $borrowing->student->name ?? '-',
-                    'borrow_date' => $borrowing->borrow_date->format('d M Y'),
+                    'student_name' => $borrowerName,
+                    'borrow_date' => $borrowing->borrow_date?->format('d M Y') ?? '-',
                     'return_date' => now()->format('d M Y'),
                 ],
             ]);
@@ -138,3 +163,4 @@ class ScanController extends Controller
         ]);
     }
 }
+
