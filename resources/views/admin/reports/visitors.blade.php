@@ -61,36 +61,30 @@
 
 <!-- Filter Section -->
 <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm mb-8">
-    <form action="{{ route('admin.reports.visitors') }}" method="GET" class="flex flex-wrap items-end gap-4">
-        <div class="flex-1 min-w-[200px]">
+    <form action="{{ route('admin.reports.visitors') }}" method="GET" class="flex flex-col md:flex-row items-end gap-4">
+        <div class="flex-1 w-full">
             <label class="block text-gray-600 text-sm font-medium mb-2">Tanggal Mulai</label>
             <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" 
                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent">
         </div>
-        <div class="flex-1 min-w-[200px]">
+        <div class="flex-1 w-full">
             <label class="block text-gray-600 text-sm font-medium mb-2">Tanggal Akhir</label>
             <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}"
                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent">
         </div>
-        <div class="flex-1 min-w-[200px]">
-            <label class="block text-gray-600 text-sm font-medium mb-2">Angkatan</label>
-            <select name="grade" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent">
-                <option value="">Semua Angkatan</option>
-                @foreach($grades as $grade)
-                    <option value="{{ $grade->id }}" {{ request('grade') == $grade->id ? 'selected' : '' }}>
-                        {{ $grade->name }}
-                    </option>
-                @endforeach
-            </select>
+        <div class="flex-1 w-full md:col-span-2 lg:col-span-1">
+            <label class="block text-gray-600 text-sm font-medium mb-2">Kata Kunci</label>
+            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIS..." 
+                   class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent">
         </div>
-        <div class="flex gap-2">
-            <button type="submit" class="px-6 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 cursor-pointer">
+        <div class="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
+            <button type="submit" class="flex-1 md:flex-none px-6 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex justify-center items-center gap-2 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                 </svg>
                 Filter
             </button>
-            <a href="{{ route('admin.reports.visitors') }}" class="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition cursor-pointer">
+            <a href="{{ route('admin.reports.visitors') }}" class="flex-1 md:flex-none px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition text-center cursor-pointer">
                 Reset
             </a>
         </div>
@@ -282,7 +276,7 @@
             </svg>
             Import Excel
         </button>
-        <a href="{{ route('admin.reports.visitors.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'grade' => request('grade')]) }}" 
+        <a href="{{ route('admin.reports.visitors.export', ['start_date' => $startDate->format('Y-m-d'), 'end_date' => $endDate->format('Y-m-d'), 'search' => request('search')]) }}" 
            class="px-4 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition flex items-center gap-2 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>

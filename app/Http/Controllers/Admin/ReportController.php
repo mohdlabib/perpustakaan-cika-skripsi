@@ -92,10 +92,13 @@ class ReportController extends Controller
         
         $query->whereBetween('visited_at', [$startDate, $endDate]);
         
-        // Grade filter
-        if ($request->filled('grade')) {
-            $query->whereHas('student', function($q) use ($request) {
-                $q->where('grade_id', $request->grade);
+        // Keyword search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('visitor_name', 'like', "%{$search}%")
+                  ->orWhere('student_nis', 'like', "%{$search}%")
+                  ->orWhere('visitor_detail', 'like', "%{$search}%");
             });
         }
         
@@ -208,12 +211,12 @@ class ReportController extends Controller
     {
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
-        $grade = $request->input('grade');
+        $search = $request->input('search');
         
         $filename = 'Laporan-Pengunjung-Perpustakaan-SMAN8-' . date('Y-m-d') . '.xlsx';
         
         return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\VisitorsExport($startDate, $endDate, $grade),
+            new \App\Exports\VisitorsExport($startDate, $endDate, $search),
             $filename
         );
     }
