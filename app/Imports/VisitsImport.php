@@ -186,7 +186,6 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
             }
         }
 
-        // Summary rows often have ': ' in their values
         if (str_contains((string) ($row['nama'] ?? ''), ': ')) {
             return true;
         }
@@ -205,15 +204,15 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
         }
 
         $visitorName = trim((string) ($row['nama'] ?? ''));
-        $tipe        = strtolower(trim((string) ($row['tipe'] ?? 'siswa')));
+        $tipe        = strtolower(trim((string) ($row['tipe'] ?? '')));
         $nis         = trim((string) ($row['nis'] ?? ''));
         $visitDate   = $this->parseDate($row['tanggal'] ?? null);
 
         // Determine visitor type from "Tipe" column
-        // Export: 'Siswa' or 'Tamu' (with capital first letter)
-        $isGuest = in_array($tipe, ['tamu', 'guest']) || (empty($nis) && !empty($visitorName));
-        if (!empty($tipe)) {
-            $isGuest = in_array($tipe, ['tamu', 'guest']);
+        $isGuest = in_array($tipe, ['tamu', 'guest']);
+        if (empty($tipe)) {
+            // fallback: no NIS = guest, has NIS = student
+            $isGuest = empty($nis);
         }
 
         if (!$isGuest && !empty($nis)) {
@@ -226,7 +225,6 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
             }
 
             if ($student) {
-                // *** DUPLICATE CHECK: skip if same student already visited on the same day ***
                 $dateStr = $visitDate ? $visitDate->toDateString() : now()->toDateString();
                 $exists = Visit::where('student_nis', $student->nis)
                     ->whereDate('visited_at', $dateStr)
@@ -237,13 +235,19 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
                     return null;
                 }
 
+                // Combine date + time (Jam column) for accurate visited_at
+                $visitedAt = $this->combineDateAndTime($visitDate, $row['jam'] ?? null);
+
                 $this->imported++;
                 return new Visit([
                     'visitor_type' => 'student',
                     'student_nis'  => $student->nis,
-                    'visited_at'   => $visitDate ?? now(),
+                    'visited_at'   => $visitedAt,
                 ]);
             }
+            // NIS given but student not found in DB — treat as guest or skip based on requirement
+            // Requirement says fallback to guest:
+            $isGuest = true;
         }
 
         // Guest visit
@@ -252,25 +256,42 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
             return null;
         }
 
-        // For guests: no strict duplicate check (same name could visit multiple times)
         $this->imported++;
 
-        // Determine institution: from "Kelas / Instansi" or "instansi" column
         $institution = $row['instansi'] ?? null;
         $purpose     = $row['tujuan'] ?? null;
 
-        // If "tujuan" contains "Kegiatan Perpustakaan" (from export), treat as null
         if ($purpose === 'Kegiatan Perpustakaan') {
             $purpose = null;
         }
 
+        // Combine date + time for accurate visited_at
+        $visitedAt = $this->combineDateAndTime($visitDate, $row['jam'] ?? null);
+
         return new Visit([
             'visitor_type'      => 'guest',
             'guest_name'        => $visitorName,
-            'guest_institution' => $institution !== '-' ? $institution : null,
-            'guest_purpose'     => $purpose !== '-' ? $purpose : null,
-            'visited_at'        => $visitDate ?? now(),
+            'guest_institution' => ($institution && $institution !== '-') ? $institution : null,
+            'guest_purpose'     => ($purpose && $purpose !== '-') ? $purpose : null,
+            'visited_at'        => $visitedAt,
         ]);
+    }
+
+    protected function combineDateAndTime(?Carbon $date, $time): Carbon
+    {
+        $date = $date ?? now();
+        if (empty($time)) {
+            return $date;
+        }
+
+        try {
+            // If time is just a string like "10:30"
+            if (is_string($time) && preg_match('/^(\d{1,2}):(\d{2})/', $time, $matches)) {
+                return $date->setTime((int)$matches[1], (int)$matches[2]);
+            }
+        } catch (\Exception $e) {}
+
+        return $date;
     }
 
     public function rules(): array

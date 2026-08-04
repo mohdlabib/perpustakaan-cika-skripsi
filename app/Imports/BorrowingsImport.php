@@ -272,14 +272,23 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
 
         $this->imported++;
 
+        // Determine borrower_type from "Tipe Peminjam" column
+        $rawTipe = strtolower(trim((string) ($row['tipe_peminjam'] ?? 'student')));
+        $borrowerType = in_array($rawTipe, ['guru', 'teacher', 'staff']) ? 'teacher' : 'student';
+
+        // borrower_name is used for teachers/guests (no NIS)
+        $borrowerName = trim((string) ($row['nama_peminjam'] ?? ''));
+
         $borrowing = Borrowing::create([
-            'student_nis'  => $student->nis,
-            'book_id'      => $book->id,
-            'book_copy_id' => $bookCopy?->id,
-            'borrow_date'  => $borrowDate ?? now(),
-            'due_date'     => $dueDate ?? now()->addDays(7),
-            'return_date'  => $returnDate,
-            'status'       => $status,
+            'student_nis'   => $student->nis,
+            'borrower_type' => $borrowerType,
+            'borrower_name' => $borrowerName ?: ($student->name ?? null),
+            'book_id'       => $book->id,
+            'book_copy_id'  => $bookCopy?->id,
+            'borrow_date'   => $borrowDate ?? now(),
+            'due_date'      => $dueDate ?? now()->addDays(7),
+            'return_date'   => $returnDate,
+            'status'        => $status,
         ]);
 
         if ($status === 'borrowed' && $bookCopy) {

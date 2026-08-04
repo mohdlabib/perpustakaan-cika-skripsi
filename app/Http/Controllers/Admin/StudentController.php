@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\StudentsTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\Grade;
@@ -163,23 +164,13 @@ class StudentController extends Controller
     }
 
     /**
-     * Download import template.
+     * Download import template (XLSX, kolom identik dengan export).
      */
     public function downloadTemplate()
     {
-        $headers = ['NIS', 'Nama', 'Kelas', 'Telepon'];
-
-        $callback = function() use ($headers) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($file, $headers);
-            fputcsv($file, ['12345', 'Ahmad Budi', 'XII IPA 1', '08123456789']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template-import-siswa.csv"',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new StudentsTemplateExport(),
+            'template-import-siswa.xlsx'
+        );
     }
 }

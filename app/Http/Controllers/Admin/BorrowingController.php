@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\BorrowingsTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Borrowing;
 use App\Models\Book;
@@ -285,24 +286,14 @@ class BorrowingController extends Controller
     }
 
     /**
-     * Download import template.
+     * Download import template (XLSX, kolom identik dengan export).
      */
     public function downloadTemplate()
     {
-        $headers = ['NIS', 'Kode Eksemplar', 'Judul Buku', 'Tanggal Pinjam', 'Batas Kembali', 'Status'];
-
-        $callback = function() use ($headers) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($file, $headers);
-            fputcsv($file, ['12345', 'BK-001', 'Pemrograman PHP', '2026-04-12', '2026-04-19', 'borrowed']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template-import-peminjaman.csv"',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new BorrowingsTemplateExport(),
+            'template-import-peminjaman.xlsx'
+        );
     }
 
     /**

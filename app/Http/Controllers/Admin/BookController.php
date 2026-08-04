@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\BooksTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -264,34 +265,14 @@ class BookController extends Controller
     }
 
     /**
-     * Download import template.
+     * Download import template (XLSX, kolom identik dengan export).
      */
     public function downloadTemplate()
     {
-        $headers = [
-            'Judul', 'Pengarang', 'ISBN', 'Penerbit', 'Tahun Terbit', 
-            'Tempat Terbit', 'Kategori', 'Edisi', 'Klasifikasi', 'No Panggil',
-            'Kode Eksemplar', 'No Inventaris', 'Rak', 'Kolom', 'Harga', 'Kondisi'
-        ];
-
-        $callback = function() use ($headers) {
-            $file = fopen('php://output', 'w');
-            // BOM for UTF-8
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($file, $headers);
-            // Sample row
-            fputcsv($file, [
-                'Pemrograman PHP', 'John Doe', '978-xxx-xxx', 'Penerbit ABC', '2024',
-                'Jakarta', 'Teknologi', 'Cetakan ke-1', '005.2', '005.2 DOE p',
-                'BK-001', 'INV-001', 'Rak A', 'Kolom 1', '50000', 'baik'
-            ]);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template-import-buku.csv"',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new BooksTemplateExport(),
+            'template-import-buku.xlsx'
+        );
     }
 }
 

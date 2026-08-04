@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\VisitorsTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookCopy;
@@ -248,26 +249,13 @@ class ReportController extends Controller
     }
 
     /**
-     * Download visitors import template.
+     * Download visitors import template (XLSX, kolom identik dengan export).
      */
     public function downloadVisitorsTemplate()
     {
-        $headers = ['NIS', 'Nama', 'Instansi', 'Tujuan', 'Tanggal Kunjungan'];
-
-        $callback = function() use ($headers) {
-            $file = fopen('php://output', 'w');
-            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            fputcsv($file, $headers);
-            // Sample: student visitor
-            fputcsv($file, ['12345', 'Ahmad Budi', '', '', '2026-04-12']);
-            // Sample: guest visitor
-            fputcsv($file, ['', 'Siti Nurbaya', 'Universitas Riau', 'Referensi penelitian', '2026-04-12']);
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="template-import-kunjungan.csv"',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new VisitorsTemplateExport(),
+            'template-import-kunjungan.xlsx'
+        );
     }
 }
