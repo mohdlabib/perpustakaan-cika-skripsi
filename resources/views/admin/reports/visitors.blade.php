@@ -485,9 +485,13 @@ function downloadMonthlyChart() {
                     <label class="block text-sm font-medium text-gray-700 mb-2">File Excel</label>
                     <input type="file" name="file" accept=".xlsx,.xls,.csv" required
                         class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 cursor-pointer">
-                    <p class="text-xs text-gray-500 mt-2">Kolom: NIS (opsional), Nama, Instansi, Tujuan, Tanggal Kunjungan. 
-                        <a href="{{ route('admin.reports.visitors.template') }}" class="text-blue-600 underline">Download template</a>
-                    </p>
+                    <div class="mt-3 p-3 bg-blue-50 rounded-xl text-xs text-blue-800 space-y-1">
+                        <p class="font-medium">💡 Tips:</p>
+                        <p>• Gunakan hasil <strong>Export Excel</strong> di atas sebagai template — langsung bisa diimport kembali</p>
+                        <p>• Kolom: Tanggal, Tipe (Siswa/Tamu), NIS (siswa saja), Nama, Kelas/Instansi, Tujuan</p>
+                        <p>• Kunjungan siswa yang sudah ada pada tanggal yang sama akan di-skip</p>
+                        <p>• Atau download <a href="{{ route('admin.reports.visitors.template') }}" class="underline font-medium">template kosong</a></p>
+                    </div>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="document.getElementById('importVisitorModal').classList.add('hidden')" class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">

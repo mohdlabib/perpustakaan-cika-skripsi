@@ -108,6 +108,8 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::get('/books/{book}/copies/{copy}/edit', [\App\Http\Controllers\Admin\BookCopyController::class, 'edit'])->name('books.copies.edit');
     Route::put('/books/{book}/copies/{copy}', [\App\Http\Controllers\Admin\BookCopyController::class, 'update'])->name('books.copies.update');
     Route::delete('/books/{book}/copies/{copy}', [\App\Http\Controllers\Admin\BookCopyController::class, 'destroy'])->name('books.copies.destroy');
+    Route::post('/books/{book}/copies/import', [\App\Http\Controllers\Admin\BookCopyController::class, 'importCopies'])->name('books.copies.import');
+    Route::get('/books/{book}/copies/export', [\App\Http\Controllers\Admin\BookCopyController::class, 'exportCopies'])->name('books.copies.export');
     
     // Borrowings Management
     Route::get('/borrowings', [AdminBorrowingController::class, 'index'])->name('borrowings.index');

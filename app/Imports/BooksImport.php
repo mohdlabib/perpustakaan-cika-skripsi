@@ -53,7 +53,6 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             $spreadsheet = IOFactory::load($filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Scan first 10 rows to find the heading row
             for ($row = 1; $row <= min(10, $sheet->getHighestRow()); $row++) {
                 $rowValues = [];
                 for ($col = 1; $col <= min(20, \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestColumn())); $col++) {
@@ -63,22 +62,18 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
                     }
                 }
 
-                // Check if this row contains known header keywords
                 $rowText = implode(' ', $rowValues);
                 if ($this->isHeaderRow($rowText)) {
                     return $row;
                 }
             }
 
-            return 1; // Default to row 1
+            return 1;
         } catch (\Exception $e) {
             return 1;
         }
     }
 
-    /**
-     * Detect heading row for CSV files.
-     */
     protected function detectHeadingRowCsv(string $filePath): int
     {
         try {
@@ -102,9 +97,6 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
         }
     }
 
-    /**
-     * Check if a row text contains known header keywords.
-     */
     protected function isHeaderRow(string $rowText): bool
     {
         $knownHeaders = ['judul', 'pengarang', 'penulis', 'isbn', 'penerbit', 'kategori', 'title', 'author'];
@@ -116,13 +108,9 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             }
         }
 
-        // At least 2 known headers found = this is a heading row
         return $matchCount >= 2;
     }
 
-    /**
-     * Override heading row to use the auto-detected position.
-     */
     public function headingRow(): int
     {
         return $this->detectedHeadingRow;
@@ -138,33 +126,35 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
 
     /**
      * Header alias mapping: maps various possible header names to canonical keys.
+     * Includes export-format headers like 'Judul Buku', 'No. Panggil', etc.
      */
     private const HEADER_ALIASES = [
-        'judul' => ['judul', 'judul_buku', 'title', 'nama_buku'],
-        'pengarang' => ['pengarang', 'penulis', 'author', 'nama_pengarang', 'nama_penulis'],
-        'isbn' => ['isbn', 'no_isbn', 'nomor_isbn'],
-        'penerbit' => ['penerbit', 'publisher'],
-        'tahun_terbit' => ['tahun_terbit', 'tahun', 'year', 'tahun_publikasi'],
-        'tempat_terbit' => ['tempat_terbit', 'kota_terbit', 'tempat'],
-        'kategori' => ['kategori', 'category', 'jenis', 'jenis_buku'],
-        'edisi' => ['edisi', 'cetakan', 'edition'],
-        'klasifikasi' => ['klasifikasi', 'classification', 'kode_klasifikasi'],
-        'no_panggil' => ['no_panggil', 'nomor_panggil', 'call_number', 'no_panggil'],
-        'kode_eksemplar' => ['kode_eksemplar', 'kode_buku', 'item_code', 'kode'],
-        'no_inventaris' => ['no_inventaris', 'inventaris', 'inventory_code', 'nomor_inventaris'],
-        'rak' => ['rak', 'shelf', 'nama_rak'],
-        'kolom' => ['kolom', 'column', 'kolom_rak'],
-        'harga' => ['harga', 'price'],
-        'kondisi' => ['kondisi', 'condition', 'status_kondisi'],
-        'deskripsi_fisik' => ['deskripsi_fisik', 'physical_description'],
-        'sinopsis' => ['sinopsis', 'deskripsi', 'description', 'abstrak'],
-        'lokasi_rak' => ['lokasi_rak', 'lokasi', 'shelf_location'],
-        'tanggal_diterima' => ['tanggal_diterima', 'tgl_diterima', 'received_date'],
-        // Export-specific headers (columns from BooksExport)
-        'total_eksemplar' => ['total_eksemplar'],
-        'tersedia' => ['tersedia'],
-        'dipinjam' => ['dipinjam'],
-        'rusak_hilang' => ['rusak_hilang'],
+        'judul'             => ['judul', 'judul_buku', 'title', 'nama_buku'],
+        'pengarang'         => ['pengarang', 'penulis', 'author', 'nama_pengarang', 'nama_penulis'],
+        'isbn'              => ['isbn', 'no_isbn', 'nomor_isbn'],
+        'penerbit'          => ['penerbit', 'publisher'],
+        'tahun_terbit'      => ['tahun_terbit', 'tahun', 'year', 'tahun_publikasi'],
+        'tempat_terbit'     => ['tempat_terbit', 'kota_terbit', 'tempat'],
+        'kategori'          => ['kategori', 'category', 'jenis', 'jenis_buku'],
+        'edisi'             => ['edisi', 'cetakan', 'edition'],
+        'klasifikasi'       => ['klasifikasi', 'classification', 'kode_klasifikasi'],
+        // "No. Panggil" normalized → "no_panggil"
+        'no_panggil'        => ['no_panggil', 'nomor_panggil', 'call_number', 'no_panggil'],
+        'kode_eksemplar'    => ['kode_eksemplar', 'kode_buku', 'item_code', 'kode'],
+        'no_inventaris'     => ['no_inventaris', 'inventaris', 'inventory_code', 'nomor_inventaris'],
+        'rak'               => ['rak', 'shelf', 'nama_rak'],
+        'kolom'             => ['kolom', 'column', 'kolom_rak'],
+        'harga'             => ['harga', 'price'],
+        'kondisi'           => ['kondisi', 'condition', 'status_kondisi'],
+        'deskripsi_fisik'   => ['deskripsi_fisik', 'physical_description'],
+        'sinopsis'          => ['sinopsis', 'deskripsi', 'description', 'abstrak'],
+        'lokasi_rak'        => ['lokasi_rak', 'lokasi', 'shelf_location'],
+        'tanggal_diterima'  => ['tanggal_diterima', 'tgl_diterima', 'received_date'],
+        // Export-only summary columns — recognized but ignored for BookCopy creation
+        'total_eksemplar'   => ['total_eksemplar'],
+        'tersedia'          => ['tersedia'],
+        'dipinjam'          => ['dipinjam'],
+        'rusak_hilang'      => ['rusak_hilang', 'rusak_hilang_'],
     ];
 
     /**
@@ -173,31 +163,25 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
      */
     private function normalizeRow(array $row): array
     {
-        // First, normalize all keys: strip BOM, whitespace, lowercase, replace special chars
         $cleanRow = [];
         foreach ($row as $key => $value) {
-            // Strip BOM characters and normalize
-            $cleanKey = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $key);
-            // Replace special characters including /, \, (, ), :, ;, etc. with underscore
+            $cleanKey = preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $key);
             $cleanKey = str_replace([' ', '-', '.', '/', '\\', '(', ')', ':', ';', ','], '_', strtolower(trim($cleanKey)));
-            // Remove consecutive underscores
             $cleanKey = preg_replace('/_+/', '_', $cleanKey);
             $cleanKey = trim($cleanKey, '_');
             $cleanRow[$cleanKey] = $value;
         }
 
-        // Now map aliases to canonical keys
         $mapped = [];
         foreach (self::HEADER_ALIASES as $canonical => $aliases) {
             foreach ($aliases as $alias) {
-                if (isset($cleanRow[$alias]) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
+                if (array_key_exists($alias, $cleanRow) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
                     $mapped[$canonical] = $cleanRow[$alias];
                     break;
                 }
             }
         }
 
-        // Also keep any unmapped keys
         foreach ($cleanRow as $key => $value) {
             if (!isset($mapped[$key])) {
                 $mapped[$key] = $value;
@@ -207,37 +191,64 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
         return $mapped;
     }
 
+    /**
+     * Check if a row looks like a summary/footer row (not actual data).
+     */
+    private function isSummaryRow(array $row): bool
+    {
+        $judul = trim((string) ($row['judul'] ?? ''));
+
+        // Skip rows with "RINGKASAN:", "Total", etc. in the title field
+        $summaryKeywords = ['ringkasan', 'total judul', 'total eksemplar', 'total dipinjam', 'total tersedia', 'total rusak'];
+        $judulLower = strtolower($judul);
+        foreach ($summaryKeywords as $kw) {
+            if (str_contains($judulLower, $kw)) {
+                return true;
+            }
+        }
+
+        // If title contains ': ' it's likely a summary row like "Total Judul Buku: 5"
+        if (str_contains($judul, ': ')) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function model(array $row)
     {
-        // Normalize row keys for consistency
         $row = $this->normalizeRow($row);
 
-        // Check if we have a title (required field)
-        $title = trim($row['judul'] ?? '');
+        $title = trim((string) ($row['judul'] ?? ''));
         if (empty($title)) {
+            $this->skipped++;
+            return null;
+        }
+
+        // Skip summary/footer rows
+        if ($this->isSummaryRow($row)) {
             $this->skipped++;
             return null;
         }
 
         // Find or create category
         $category = null;
-        if (!empty($row['kategori'])) {
-            $category = Category::firstOrCreate(['name' => trim($row['kategori'])]);
+        if (!empty($row['kategori']) && trim((string) $row['kategori']) !== '-') {
+            $category = Category::firstOrCreate(['name' => trim((string) $row['kategori'])]);
         }
 
         // Check for existing book by ISBN or title + author combo
         $existingBook = null;
-        
+
         if (!empty($row['isbn'])) {
-            $isbn = trim($row['isbn']);
-            // Skip placeholder ISBNs
+            $isbn = trim((string) $row['isbn']);
             if ($isbn !== '-' && $isbn !== '0') {
                 $existingBook = Book::where('isbn', $isbn)->first();
             }
         }
-        
+
         if (!$existingBook) {
-            $author = trim($row['pengarang'] ?? '');
+            $author = trim((string) ($row['pengarang'] ?? ''));
             if (!empty($author) && $author !== '-') {
                 $existingBook = Book::where('title', $title)
                     ->where('author', $author)
@@ -246,13 +257,16 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
         }
 
         if ($existingBook) {
-            // Book exists — add as a new copy (eksemplar)
-            $this->createBookCopy($existingBook, $row);
+            // Book exists — only add a new copy if we have copy-specific data
+            // Don't create a copy just from export summary columns
+            if ($this->hasCopyData($row)) {
+                $this->createBookCopy($existingBook, $row);
+            }
             $this->updated++;
             return null;
         }
 
-        // Parse publication year (handle possible non-numeric values)
+        // Parse publication year
         $pubYear = $row['tahun_terbit'] ?? null;
         if ($pubYear !== null && $pubYear !== '-') {
             $pubYear = is_numeric($pubYear) ? (int) $pubYear : null;
@@ -260,43 +274,72 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             $pubYear = null;
         }
 
-        // Create new book
         $book = Book::create([
-            'title' => $title,
-            'author' => trim($row['pengarang'] ?? '-'),
-            'category_id' => $category?->id,
-            'isbn' => ($row['isbn'] ?? null) !== '-' ? ($row['isbn'] ?? null) : null,
-            'publisher' => ($row['penerbit'] ?? null) !== '-' ? ($row['penerbit'] ?? null) : null,
-            'publication_year' => $pubYear,
-            'publication_place' => ($row['tempat_terbit'] ?? null) !== '-' ? ($row['tempat_terbit'] ?? null) : null,
-            'edition' => ($row['edisi'] ?? null) !== '-' ? ($row['edisi'] ?? null) : null,
-            'classification' => ($row['klasifikasi'] ?? null) !== '-' ? ($row['klasifikasi'] ?? null) : null,
-            'call_number' => ($row['no_panggil'] ?? null) !== '-' ? ($row['no_panggil'] ?? null) : null,
-            'physical_description' => ($row['deskripsi_fisik'] ?? null) !== '-' ? ($row['deskripsi_fisik'] ?? null) : null,
-            'description' => ($row['sinopsis'] ?? null) !== '-' ? ($row['sinopsis'] ?? null) : null,
+            'title'                => $title,
+            'author'               => trim((string) ($row['pengarang'] ?? '-')),
+            'category_id'          => $category?->id,
+            'isbn'                 => $this->nullOrValue($row['isbn'] ?? null),
+            'publisher'            => $this->nullOrValue($row['penerbit'] ?? null),
+            'publication_year'     => $pubYear,
+            'publication_place'    => $this->nullOrValue($row['tempat_terbit'] ?? null),
+            'edition'              => $this->nullOrValue($row['edisi'] ?? null),
+            'classification'       => $this->nullOrValue($row['klasifikasi'] ?? null),
+            'call_number'          => $this->nullOrValue($row['no_panggil'] ?? null),
+            'physical_description' => $this->nullOrValue($row['deskripsi_fisik'] ?? null),
+            'description'          => $this->nullOrValue($row['sinopsis'] ?? null),
         ]);
 
-        // Create initial copy
-        $this->createBookCopy($book, $row);
+        // Create initial copy only if we have copy-specific data
+        // (avoid creating empty copies from export summary-only rows)
+        if ($this->hasCopyData($row)) {
+            $this->createBookCopy($book, $row);
+        } else {
+            // Always create at least 1 empty copy so the book has stock
+            $book->copies()->create([
+                'book_id'      => $book->id,
+                'condition'    => 'baik',
+                'is_available' => true,
+            ]);
+        }
 
         $this->imported++;
-        return null; // We already created the book manually
+        return null;
     }
 
     /**
-     * Create a BookCopy from import row data.
+     * Check if row has copy-specific data (not just book summary info).
+     * Export-only summary columns (total_eksemplar, tersedia, dipinjam, rusak_hilang)
+     * don't count as copy data.
      */
+    private function hasCopyData(array $row): bool
+    {
+        return !empty($row['kode_eksemplar'])
+            || !empty($row['no_inventaris'])
+            || !empty($row['rak'])
+            || (!empty($row['harga']) && is_numeric(str_replace([',', '.'], '', (string) $row['harga'])));
+    }
+
+    /**
+     * Return null for dash/empty values, otherwise return trimmed string.
+     */
+    private function nullOrValue($value): ?string
+    {
+        if ($value === null || $value === '' || trim((string) $value) === '-') {
+            return null;
+        }
+        return trim((string) $value);
+    }
+
     protected function createBookCopy(Book $book, array $row): BookCopy
     {
-        // Find shelf if specified
         $shelfId = null;
         $shelfColumnId = null;
-        
+
         if (!empty($row['rak'])) {
             $shelf = Shelf::where('name', 'like', '%' . trim($row['rak']) . '%')->first();
             if ($shelf) {
                 $shelfId = $shelf->id;
-                
+
                 if (!empty($row['kolom'])) {
                     $column = ShelfColumn::where('shelf_id', $shelf->id)
                         ->where('name', 'like', '%' . trim($row['kolom']) . '%')
@@ -306,32 +349,55 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             }
         }
 
-        // Parse condition
         $condition = 'baik';
         if (!empty($row['kondisi'])) {
-            $kondisi = strtolower(trim($row['kondisi']));
+            $kondisi = strtolower(trim((string) $row['kondisi']));
             if (in_array($kondisi, ['baik', 'rusak', 'hilang'])) {
                 $condition = $kondisi;
             }
         }
 
+        // Safely parse price — must be numeric or null
+        $price = null;
+        if (!empty($row['harga'])) {
+            $rawPrice = str_replace([',', ' '], ['', ''], (string) $row['harga']);
+            if (is_numeric($rawPrice)) {
+                $price = (float) $rawPrice;
+            }
+        }
+
+        // Safely parse received_date
+        $receivedDate = null;
+        if (!empty($row['tanggal_diterima']) && $row['tanggal_diterima'] !== '-') {
+            try {
+                $raw = $row['tanggal_diterima'];
+                if (is_numeric($raw)) {
+                    // Excel serial date
+                    $receivedDate = \Carbon\Carbon::createFromTimestamp(($raw - 25569) * 86400)->toDateString();
+                } else {
+                    $receivedDate = \Carbon\Carbon::parse($raw)->toDateString();
+                }
+            } catch (\Exception $e) {
+                $receivedDate = null;
+            }
+        }
+
         return BookCopy::create([
-            'book_id' => $book->id,
-            'copy_code' => $row['kode_eksemplar'] ?? null,
-            'inventory_code' => $row['no_inventaris'] ?? null,
-            'shelf_id' => $shelfId,
-            'shelf_column_id' => $shelfColumnId,
-            'shelf_location' => $row['lokasi_rak'] ?? null,
-            'condition' => $condition,
-            'received_date' => $row['tanggal_diterima'] ?? null,
-            'price' => $row['harga'] ?? null,
-            'is_available' => $condition === 'baik',
+            'book_id'       => $book->id,
+            'copy_code'     => $this->nullOrValue($row['kode_eksemplar'] ?? null),
+            'inventory_code'=> $this->nullOrValue($row['no_inventaris'] ?? null),
+            'shelf_id'      => $shelfId,
+            'shelf_column_id'=> $shelfColumnId,
+            'shelf_location'=> $this->nullOrValue($row['lokasi_rak'] ?? null),
+            'condition'     => $condition,
+            'received_date' => $receivedDate,
+            'price'         => $price,
+            'is_available'  => $condition === 'baik',
         ]);
     }
 
     public function rules(): array
     {
-        // Use relaxed validation — we handle missing title in model() method
         return [
             '*.judul' => 'nullable|string|max:500',
         ];
@@ -344,18 +410,7 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
         ];
     }
 
-    public function getImportedCount(): int
-    {
-        return $this->imported;
-    }
-
-    public function getUpdatedCount(): int
-    {
-        return $this->updated;
-    }
-
-    public function getSkippedCount(): int
-    {
-        return $this->skipped;
-    }
+    public function getImportedCount(): int { return $this->imported; }
+    public function getUpdatedCount(): int { return $this->updated; }
+    public function getSkippedCount(): int { return $this->skipped; }
 }

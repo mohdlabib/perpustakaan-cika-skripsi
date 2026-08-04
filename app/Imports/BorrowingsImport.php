@@ -25,9 +25,6 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
     protected $skipped = 0;
     protected $detectedHeadingRow = 1;
 
-    /**
-     * Constructor: auto-detect the heading row from file.
-     */
     public function __construct(?string $filePath = null)
     {
         if ($filePath && file_exists($filePath)) {
@@ -35,9 +32,6 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
     }
 
-    /**
-     * Auto-detect the heading row by scanning first 10 rows.
-     */
     protected function detectHeadingRow(string $filePath): int
     {
         try {
@@ -71,9 +65,6 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
     }
 
-    /**
-     * Detect heading row for CSV files.
-     */
     protected function detectHeadingRowCsv(string $filePath): int
     {
         try {
@@ -97,9 +88,6 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
     }
 
-    /**
-     * Check if a row text contains known header keywords for borrowings.
-     */
     protected function isHeaderRow(string $rowText): bool
     {
         $knownHeaders = ['nis', 'peminjam', 'tanggal', 'pinjam', 'kembali', 'status', 'judul', 'buku'];
@@ -114,9 +102,6 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         return $matchCount >= 3;
     }
 
-    /**
-     * Override heading row to use the auto-detected position.
-     */
     public function headingRow(): int
     {
         return $this->detectedHeadingRow;
@@ -132,50 +117,42 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
 
     /**
      * Header alias mapping for borrowing import.
-     * Expanded to handle export format headers (e.g., 'NIS / Info', 'Nama Peminjam').
+     * "NIS / Info" export header → normalized to "nis_info" → maps to canonical "nis".
      */
     private const HEADER_ALIASES = [
-        'nis' => ['nis', 'nis_siswa', 'no_induk', 'nomor_induk', 'nis_info', 'nis_siswa_info'],
-        'kode_eksemplar' => ['kode_eksemplar', 'kode_buku', 'item_code', 'kode', 'copy_code'],
-        'judul_buku' => ['judul_buku', 'judul', 'title', 'nama_buku'],
-        'nama_peminjam' => ['nama_peminjam', 'nama', 'borrower_name', 'peminjam'],
-        'tipe_peminjam' => ['tipe_peminjam', 'tipe', 'borrower_type', 'jenis_peminjam'],
-        'penulis' => ['penulis', 'pengarang', 'author'],
-        'tanggal_pinjam' => ['tanggal_pinjam', 'tgl_pinjam', 'borrow_date', 'tanggal_peminjaman'],
-        'batas_kembali' => ['batas_kembali', 'tanggal_kembali', 'due_date', 'tgl_kembali', 'deadline'],
-        'tanggal_dikembalikan' => ['tanggal_dikembalikan', 'tgl_dikembalikan', 'return_date', 'dikembalikan', 'tanggal_kembali_aktual'],
-        'status' => ['status', 'status_peminjaman'],
+        'nis'                   => ['nis', 'nis_siswa', 'no_induk', 'nomor_induk', 'nis_info', 'nis_siswa_info'],
+        'kode_eksemplar'        => ['kode_eksemplar', 'kode_buku', 'item_code', 'kode', 'copy_code'],
+        'judul_buku'            => ['judul_buku', 'judul', 'title', 'nama_buku'],
+        'nama_peminjam'         => ['nama_peminjam', 'nama', 'borrower_name', 'peminjam', 'nama_peminjam'],
+        'tipe_peminjam'         => ['tipe_peminjam', 'tipe', 'borrower_type', 'jenis_peminjam'],
+        'penulis'               => ['penulis', 'pengarang', 'author'],
+        'tanggal_pinjam'        => ['tanggal_pinjam', 'tgl_pinjam', 'borrow_date', 'tanggal_peminjaman'],
+        'batas_kembali'         => ['batas_kembali', 'tanggal_kembali', 'due_date', 'tgl_kembali', 'deadline'],
+        'tanggal_dikembalikan'  => ['tanggal_dikembalikan', 'tgl_dikembalikan', 'return_date', 'dikembalikan', 'tanggal_kembali_aktual'],
+        'status'                => ['status', 'status_peminjaman'],
     ];
 
-    /**
-     * Normalize row keys using alias mapping.
-     * Fixed: now strips '/', '\', '(', ')' and other special characters.
-     */
     private function normalizeRow(array $row): array
     {
-        // Clean keys: strip BOM, whitespace, lowercase, replace special chars
         $cleanRow = [];
         foreach ($row as $key => $value) {
-            $cleanKey = preg_replace('/[\x{FEFF}\x{200B}]/u', '', $key);
-            // Replace special characters including /, \, (, ), :, ;, etc. with underscore
+            $cleanKey = preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $key);
             $cleanKey = str_replace([' ', '-', '.', '/', '\\', '(', ')', ':', ';', ','], '_', strtolower(trim($cleanKey)));
             $cleanKey = preg_replace('/_+/', '_', $cleanKey);
             $cleanKey = trim($cleanKey, '_');
             $cleanRow[$cleanKey] = $value;
         }
 
-        // Map aliases to canonical keys
         $mapped = [];
         foreach (self::HEADER_ALIASES as $canonical => $aliases) {
             foreach ($aliases as $alias) {
-                if (isset($cleanRow[$alias]) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
+                if (array_key_exists($alias, $cleanRow) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
                     $mapped[$canonical] = $cleanRow[$alias];
                     break;
                 }
             }
         }
 
-        // Keep unmapped keys too
         foreach ($cleanRow as $key => $value) {
             if (!isset($mapped[$key])) {
                 $mapped[$key] = $value;
@@ -189,9 +166,8 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
     {
         $row = $this->normalizeRow($row);
 
-        // Get NIS - ensure it's a string and trimmed
         $nis = trim((string) ($row['nis'] ?? ''));
-        
+
         // If NIS is empty but we have a nama_peminjam, try to find student by name
         if (empty($nis) && !empty($row['nama_peminjam'])) {
             $studentByName = Student::where('name', 'like', '%' . trim($row['nama_peminjam']) . '%')->first();
@@ -199,37 +175,42 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
                 $nis = $studentByName->nis;
             }
         }
-        
+
         if (empty($nis)) {
             $this->skipped++;
             return null;
         }
 
+        // Skip obvious summary rows
+        if (str_contains($nis, ':') || str_contains(strtolower($nis), 'total') || str_contains(strtolower($nis), 'ringkasan')) {
+            $this->skipped++;
+            return null;
+        }
+
         $bookCode = trim((string) ($row['kode_eksemplar'] ?? ''));
-        
-        // Find student by NIS
+
+        // Find student
         $student = Student::find($nis);
         if (!$student) {
-            // Try partial match (NIS might have leading zeros stripped by Excel)
             $student = Student::where('nis', 'like', '%' . $nis)->first();
         }
-        
+
         if (!$student) {
             $this->skipped++;
             return null;
         }
 
-        // Find book by copy_code or by title
+        // Find book copy then book
         $book = null;
         $bookCopy = null;
-        
+
         if (!empty($bookCode)) {
             $bookCopy = BookCopy::where('copy_code', $bookCode)->first();
             if ($bookCopy) {
                 $book = $bookCopy->book;
             }
         }
-        
+
         if (!$book && !empty($row['judul_buku'])) {
             $book = Book::where('title', 'like', '%' . trim($row['judul_buku']) . '%')->first();
         }
@@ -241,34 +222,46 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
 
         // Parse dates
         $borrowDate = $this->parseDate($row['tanggal_pinjam'] ?? null);
-        $dueDate = $this->parseDate($row['batas_kembali'] ?? null);
+        $dueDate    = $this->parseDate($row['batas_kembali'] ?? null);
         $returnDate = $this->parseDate($row['tanggal_dikembalikan'] ?? null);
-        
+
         // Determine status
         $status = strtolower(trim((string) ($row['status'] ?? 'borrowed')));
-        
-        // Map Indonesian status labels back to English
+
         $statusMap = [
-            'dipinjam' => 'borrowed',
-            'dikembalikan' => 'returned',
+            'dipinjam'             => 'borrowed',
+            'dikembalikan'         => 'returned',
             'menunggu persetujuan' => 'pending',
-            'ditolak' => 'rejected',
-            'terlambat' => 'borrowed', // Overdue is still 'borrowed' status
+            'ditolak'              => 'rejected',
+            'terlambat'            => 'borrowed',
         ];
-        
-        // Check if status matches Indonesian label (possibly with extra info like "Terlambat (5 hari)")
+
         foreach ($statusMap as $label => $englishStatus) {
             if (str_contains($status, $label)) {
                 $status = $englishStatus;
                 break;
             }
         }
-        
+
         if (!in_array($status, ['borrowed', 'returned', 'pending', 'rejected'])) {
             $status = $returnDate ? 'returned' : 'borrowed';
         }
 
-        // If status is 'borrowed', try to assign a specific copy
+        // *** DUPLICATE CHECK: skip if same borrowing already exists ***
+        $borrowDateStr = $borrowDate ? $borrowDate->toDateString() : null;
+        if ($borrowDateStr) {
+            $exists = Borrowing::where('student_nis', $student->nis)
+                ->where('book_id', $book->id)
+                ->whereDate('borrow_date', $borrowDateStr)
+                ->exists();
+
+            if ($exists) {
+                $this->skipped++;
+                return null;
+            }
+        }
+
+        // If actively borrowed, try to assign a specific copy
         if ($status === 'borrowed' && !$bookCopy) {
             $bookCopy = $book->copies()
                 ->where('condition', 'baik')
@@ -280,26 +273,24 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         $this->imported++;
 
         $borrowing = Borrowing::create([
-            'student_nis' => $student->nis,
-            'book_id' => $book->id,
+            'student_nis'  => $student->nis,
+            'book_id'      => $book->id,
             'book_copy_id' => $bookCopy?->id,
-            'borrow_date' => $borrowDate ?? now(),
-            'due_date' => $dueDate ?? now()->addDays(7),
-            'return_date' => $returnDate,
-            'status' => $status,
+            'borrow_date'  => $borrowDate ?? now(),
+            'due_date'     => $dueDate ?? now()->addDays(7),
+            'return_date'  => $returnDate,
+            'status'       => $status,
         ]);
 
-        // Mark copy as unavailable if actively borrowed
         if ($status === 'borrowed' && $bookCopy) {
             $bookCopy->update(['is_available' => false]);
         }
 
-        return null; // We already created the record manually
+        return null;
     }
 
     public function rules(): array
     {
-        // Relaxed validation - we handle missing NIS in model()
         return [
             '*.nis' => 'nullable|string',
         ];
@@ -315,33 +306,23 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
     protected function parseDate($value): ?Carbon
     {
         if (empty($value) || $value === '-') return null;
-        
+
         try {
-            // Handle Excel numeric date (serial date number)
             if (is_numeric($value)) {
-                return Carbon::createFromTimestamp(
-                    ($value - 25569) * 86400
-                );
+                return Carbon::createFromTimestamp(($value - 25569) * 86400);
             }
-            
+
             // Handle d/m/Y format (from export)
             if (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $value)) {
                 return Carbon::createFromFormat('d/m/Y', $value);
             }
-            
+
             return Carbon::parse($value);
         } catch (\Exception $e) {
             return null;
         }
     }
 
-    public function getImportedCount(): int
-    {
-        return $this->imported;
-    }
-
-    public function getSkippedCount(): int
-    {
-        return $this->skipped;
-    }
+    public function getImportedCount(): int { return $this->imported; }
+    public function getSkippedCount(): int { return $this->skipped; }
 }

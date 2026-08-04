@@ -24,10 +24,6 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     protected $skipped = 0;
     protected $detectedHeadingRow = 1;
 
-    /**
-     * Constructor: auto-detect the heading row from file.
-     * Exported files have 4 title rows before the actual header.
-     */
     public function __construct(?string $filePath = null)
     {
         if ($filePath && file_exists($filePath)) {
@@ -35,10 +31,6 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         }
     }
 
-    /**
-     * Auto-detect the heading row by scanning first 10 rows.
-     * Looks for known header keywords like 'NIS', 'Nama', 'Kelas'.
-     */
     protected function detectHeadingRow(string $filePath): int
     {
         try {
@@ -72,9 +64,6 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         }
     }
 
-    /**
-     * Detect heading row for CSV files.
-     */
     protected function detectHeadingRowCsv(string $filePath): int
     {
         try {
@@ -98,9 +87,6 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         }
     }
 
-    /**
-     * Check if a row text contains known header keywords for students.
-     */
     protected function isHeaderRow(string $rowText): bool
     {
         $knownHeaders = ['nis', 'nama', 'kelas', 'angkatan', 'telepon', 'class'];
@@ -112,13 +98,9 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             }
         }
 
-        // At least 2 known headers found = this is a heading row
         return $matchCount >= 2;
     }
 
-    /**
-     * Override heading row to use the auto-detected position.
-     */
     public function headingRow(): int
     {
         return $this->detectedHeadingRow;
@@ -132,49 +114,40 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         ];
     }
 
-    /**
-     * Header alias mapping: maps various possible header names to canonical keys.
-     * Includes export header formats like 'Nama Lengkap', 'No. Telepon', 'Angkatan'.
-     */
     private const HEADER_ALIASES = [
-        'nis' => ['nis', 'nis_siswa', 'no_induk', 'nomor_induk', 'nomor_induk_siswa'],
-        'nama' => ['nama', 'nama_siswa', 'nama_lengkap', 'name', 'full_name'],
-        'kelas' => ['kelas', 'class', 'kelas_siswa', 'rombel'],
+        'nis'      => ['nis', 'nis_siswa', 'no_induk', 'nomor_induk', 'nomor_induk_siswa'],
+        'nama'     => ['nama', 'nama_siswa', 'nama_lengkap', 'name', 'full_name'],
+        'kelas'    => ['kelas', 'class', 'kelas_siswa', 'rombel'],
         'angkatan' => ['angkatan', 'grade', 'tahun_angkatan', 'tahun_masuk'],
-        'telepon' => ['telepon', 'no_telepon', 'nomor_telepon', 'hp', 'no_hp', 'phone', 'handphone', 'wa', 'whatsapp'],
-        // Skip-only fields (export columns that don't exist in DB)
-        'jenis_kelamin' => ['jenis_kelamin', 'gender', 'jk', 'l_p'],
-        'alamat' => ['alamat', 'address'],
+        'telepon'  => ['telepon', 'no_telepon', 'nomor_telepon', 'hp', 'no_hp', 'phone', 'handphone', 'wa', 'whatsapp', 'no_telepon'],
+        // Export-only columns — recognized but ignored
+        'total_peminjaman'  => ['total_peminjaman'],
+        'sedang_dipinjam'   => ['sedang_dipinjam'],
+        'terlambat'         => ['terlambat'],
+        'status'            => ['status'],
     ];
 
-    /**
-     * Normalize row keys to handle various header formats using alias mapping.
-     */
     private function normalizeRow(array $row): array
     {
-        // Clean keys: strip BOM, whitespace, lowercase, replace special chars
         $cleanRow = [];
         foreach ($row as $key => $value) {
             $cleanKey = preg_replace('/[\x{FEFF}\x{200B}]/u', '', (string) $key);
-            // Replace special characters including /, \, (, ), :, ;, etc. with underscore
             $cleanKey = str_replace([' ', '-', '.', '/', '\\', '(', ')', ':', ';', ','], '_', strtolower(trim($cleanKey)));
             $cleanKey = preg_replace('/_+/', '_', $cleanKey);
             $cleanKey = trim($cleanKey, '_');
             $cleanRow[$cleanKey] = $value;
         }
 
-        // Map aliases to canonical keys
         $mapped = [];
         foreach (self::HEADER_ALIASES as $canonical => $aliases) {
             foreach ($aliases as $alias) {
-                if (isset($cleanRow[$alias]) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
+                if (array_key_exists($alias, $cleanRow) && $cleanRow[$alias] !== null && $cleanRow[$alias] !== '') {
                     $mapped[$canonical] = $cleanRow[$alias];
                     break;
                 }
             }
         }
 
-        // Keep unmapped keys too
         foreach ($cleanRow as $key => $value) {
             if (!isset($mapped[$key])) {
                 $mapped[$key] = $value;
@@ -184,28 +157,53 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         return $mapped;
     }
 
+    /**
+     * Detect if this row is a summary/footer row from the export.
+     * Export appends "RINGKASAN:" and summary data after the last data row.
+     */
+    private function isSummaryRow(string $nis, string $nama): bool
+    {
+        // Skip rows where NIS contains non-alphanumeric (like "RINGKASAN:", "Total...")
+        if (str_contains($nis, ':') || str_contains($nama, ':')) {
+            return true;
+        }
+
+        // Skip rows starting with known summary keywords
+        $summaryKeywords = ['ringkasan', 'total siswa', 'siswa aktif', 'total semua', 'peminjaman terlambat'];
+        $nisLower = strtolower($nis);
+        $namaLower = strtolower($nama);
+        foreach ($summaryKeywords as $kw) {
+            if (str_contains($nisLower, $kw) || str_contains($namaLower, $kw)) {
+                return true;
+            }
+        }
+
+        // If NIS is clearly not a valid student ID (contains letters AND it's not alphanumeric like "XII IPA 1")
+        // We check: valid NIS is purely numeric or alphanumeric without spaces
+        if (!empty($nis) && preg_match('/\s/', $nis)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function model(array $row)
     {
-        // Normalize row keys for consistency
         $row = $this->normalizeRow($row);
 
-        // Skip summary rows (e.g., "Total Siswa: 5", "RINGKASAN:")
-        $nis = trim((string) ($row['nis'] ?? ''));
+        $nis  = trim((string) ($row['nis'] ?? ''));
         $nama = trim((string) ($row['nama'] ?? ''));
 
-        // Required: NIS and Nama must be present and not be summary text
         if (empty($nis) || empty($nama)) {
             $this->skipped++;
             return null;
         }
 
-        // Skip rows that look like summary (contain ':', or NIS contains non-numeric/non-alphanumeric mixed)
-        if (str_contains($nis, ':') || str_contains($nama, ':')) {
+        if ($this->isSummaryRow($nis, $nama)) {
             $this->skipped++;
             return null;
         }
 
-        // Skip placeholder values
         if ($nis === '-' || $nama === '-') {
             $this->skipped++;
             return null;
@@ -215,28 +213,28 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         $grade = null;
         if (!empty($row['angkatan']) && trim((string) $row['angkatan']) !== '-') {
             $gradeName = trim((string) $row['angkatan']);
-            $grade = Grade::firstOrCreate(['name' => $gradeName]);
+            // Skip if angkatan looks like a summary label
+            if (!str_contains(strtolower($gradeName), ':') && !str_contains(strtolower($gradeName), 'total')) {
+                $grade = Grade::firstOrCreate(['name' => $gradeName]);
+            }
         }
 
-        // Get other fields with proper defaults
-        $kelas = !empty($row['kelas']) && trim((string) $row['kelas']) !== '-' 
-            ? trim((string) $row['kelas']) 
-            : null;
-        
-        $telepon = !empty($row['telepon']) && trim((string) $row['telepon']) !== '-' 
-            ? trim((string) $row['telepon']) 
+        $kelas = (!empty($row['kelas']) && trim((string) $row['kelas']) !== '-')
+            ? trim((string) $row['kelas'])
             : null;
 
-        // Check if student exists
+        $telepon = (!empty($row['telepon']) && trim((string) $row['telepon']) !== '-')
+            ? trim((string) $row['telepon'])
+            : null;
+
         $existing = Student::find($nis);
 
         if ($existing) {
-            // Update existing student
             $existing->update([
-                'name' => $nama,
-                'class' => $kelas ?? $existing->class,
+                'name'     => $nama,
+                'class'    => $kelas ?? $existing->class,
                 'grade_id' => $grade?->id ?? $existing->grade_id,
-                'phone' => $telepon ?? $existing->phone,
+                'phone'    => $telepon ?? $existing->phone,
             ]);
             $this->updated++;
             return null;
@@ -245,20 +243,19 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
         $this->imported++;
 
         return new Student([
-            'nis' => $nis,
-            'name' => $nama,
-            'class' => $kelas,
+            'nis'      => $nis,
+            'name'     => $nama,
+            'class'    => $kelas,
             'grade_id' => $grade?->id,
-            'phone' => $telepon,
-            'password' => Hash::make($nis), // Default password = NIS
+            'phone'    => $telepon,
+            'password' => Hash::make($nis),
         ]);
     }
 
     public function rules(): array
     {
-        // Relaxed validation — we handle missing fields in model() method
         return [
-            '*.nis' => 'nullable|string|max:20',
+            '*.nis'  => 'nullable|string|max:20',
             '*.nama' => 'nullable|string|max:255',
         ];
     }
@@ -266,23 +263,12 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     public function customValidationMessages(): array
     {
         return [
-            '*.nis.max' => 'NIS terlalu panjang (maks 20 karakter).',
+            '*.nis.max'  => 'NIS terlalu panjang (maks 20 karakter).',
             '*.nama.max' => 'Nama terlalu panjang (maks 255 karakter).',
         ];
     }
 
-    public function getImportedCount(): int
-    {
-        return $this->imported;
-    }
-
-    public function getUpdatedCount(): int
-    {
-        return $this->updated;
-    }
-
-    public function getSkippedCount(): int
-    {
-        return $this->skipped;
-    }
+    public function getImportedCount(): int { return $this->imported; }
+    public function getUpdatedCount(): int { return $this->updated; }
+    public function getSkippedCount(): int { return $this->skipped; }
 }

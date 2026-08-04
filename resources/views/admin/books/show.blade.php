@@ -33,10 +33,24 @@
                 <div class="flex flex-wrap gap-2 mt-3">
                     <span class="px-3 py-1 bg-white/20 rounded-lg text-sm">{{ $book->category->name ?? '-' }}</span>
                     @if($book->edition)
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">{{ $book->edition }}</span>
+                        <span class="px-3 py-1 bg-white/20 rounded-lg text-sm font-medium">
+                            <span class="text-white/60 text-xs">Edisi: </span>{{ $book->edition }}
+                        </span>
                     @endif
                     @if($book->isbn)
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">ISBN: {{ $book->isbn }}</span>
+                        <span class="px-3 py-1 bg-white/20 rounded-lg text-sm font-medium">
+                            <span class="text-white/60 text-xs">ISBN: </span>{{ $book->isbn }}
+                        </span>
+                    @endif
+                    @if($book->classification)
+                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">
+                            <span class="text-white/60 text-xs">Klasifikasi: </span>{{ $book->classification }}
+                        </span>
+                    @endif
+                    @if($book->call_number)
+                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">
+                            <span class="text-white/60 text-xs">No. Panggil: </span>{{ $book->call_number }}
+                        </span>
                     @endif
                 </div>
                 <div class="flex items-center gap-6 mt-4">
@@ -67,6 +81,14 @@
     <!-- Book Details Grid -->
     <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
         <div>
+            <span class="text-gray-500">ISBN</span>
+            <p class="font-medium text-gray-800 mt-1 font-mono">{{ $book->isbn ?? '-' }}</p>
+        </div>
+        <div>
+            <span class="text-gray-500">Edisi / Cetakan</span>
+            <p class="font-medium text-gray-800 mt-1">{{ $book->edition ?? '-' }}</p>
+        </div>
+        <div>
             <span class="text-gray-500">Penerbit</span>
             <p class="font-medium text-gray-800 mt-1">{{ $book->publisher ?? '-' }}</p>
         </div>
@@ -91,7 +113,7 @@
             <p class="font-medium text-gray-800 mt-1">{{ $book->physical_description ?? '-' }}</p>
         </div>
         @if($book->description)
-        <div class="col-span-2">
+        <div class="col-span-2 md:col-span-4">
             <span class="text-gray-500">Sinopsis</span>
             <p class="font-medium text-gray-800 mt-1 line-clamp-3">{{ $book->description }}</p>
         </div>
@@ -101,15 +123,35 @@
 
 <!-- Copies Section -->
 <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-    <div class="flex justify-between items-center p-6 border-b border-gray-100">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-6 border-b border-gray-100">
         <div>
             <h2 class="text-lg font-semibold text-gray-800">Daftar Eksemplar</h2>
             <p class="text-gray-500 text-sm">{{ $copies->total() }} eksemplar terdaftar</p>
         </div>
-        <a href="{{ route('admin.books.copies.create', $book) }}" class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Tambah Eksemplar
-        </a>
+        <div class="flex flex-wrap gap-2">
+            <!-- Export Eksemplar -->
+            <a href="{{ route('admin.books.copies.export', $book) }}"
+               class="px-4 py-2 border border-green-300 text-green-700 rounded-xl text-sm font-medium hover:bg-green-50 transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                Export Eksemplar
+            </a>
+            <!-- Import Eksemplar -->
+            <button onclick="document.getElementById('importCopyModal').classList.remove('hidden')"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition flex items-center gap-2 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Import Eksemplar
+            </button>
+            <!-- Tambah Manual -->
+            <a href="{{ route('admin.books.copies.create', $book) }}"
+               class="px-4 py-2.5 bg-primary-dark text-white rounded-xl font-medium hover:bg-opacity-90 transition flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Tambah Eksemplar
+            </a>
+        </div>
     </div>
 
     <div class="overflow-x-auto">
@@ -190,5 +232,52 @@
         {{ $copies->links() }}
     </div>
     @endif
+</div>
+
+<!-- Import Eksemplar Modal -->
+<div id="importCopyModal" class="fixed inset-0 z-50 hidden" role="dialog">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="document.getElementById('importCopyModal').classList.add('hidden')"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="bg-blue-600 p-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Import Daftar Eksemplar</h3>
+                        <p class="text-white/70 text-sm">{{ Str::limit($book->title, 35) }}</p>
+                    </div>
+                </div>
+            </div>
+            <form action="{{ route('admin.books.copies.import', $book) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">File Excel</label>
+                    <input type="file" name="file" accept=".xlsx,.xls,.csv" required
+                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 file:font-medium hover:file:bg-blue-100 cursor-pointer">
+                    <div class="mt-3 p-3 bg-blue-50 rounded-xl text-xs text-blue-800 space-y-1">
+                        <p class="font-medium">💡 Tips:</p>
+                        <p>• Gunakan hasil <strong>Export Eksemplar</strong> di atas sebagai template — langsung bisa diimport kembali</p>
+                        <p>• Kolom: <strong>Kode Eksemplar, No. Inventaris, Rak, Kolom, Harga, Kondisi, Tanggal Diterima</strong></p>
+                        <p>• Eksemplar dengan kode yang sudah ada akan di-skip (tidak duplikat)</p>
+                        <p>• Kondisi: <strong>baik</strong>, <strong>rusak</strong>, atau <strong>hilang</strong></p>
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="document.getElementById('importCopyModal').classList.add('hidden')"
+                            class="flex-1 px-4 py-3 border border-gray-300 text-gray-600 rounded-xl font-medium hover:bg-gray-50 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition cursor-pointer">
+                        Import Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

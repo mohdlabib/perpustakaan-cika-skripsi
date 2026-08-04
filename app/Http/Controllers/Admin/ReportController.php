@@ -231,8 +231,9 @@ class ReportController extends Controller
         ]);
 
         try {
-            $import = new \App\Imports\VisitsImport();
-            \Maatwebsite\Excel\Facades\Excel::import($import, $request->file('file'));
+            $file = $request->file('file');
+            $import = new \App\Imports\VisitsImport($file->getRealPath());
+            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
 
             $msg = "Import berhasil! {$import->getImportedCount()} kunjungan ditambahkan.";
             if ($import->getSkippedCount() > 0) {
