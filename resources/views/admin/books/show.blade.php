@@ -32,26 +32,7 @@
                 <p class="text-white/80 mt-1">{{ $book->author }}</p>
                 <div class="flex flex-wrap gap-2 mt-3">
                     <span class="px-3 py-1 bg-white/20 rounded-lg text-sm">{{ $book->category->name ?? '-' }}</span>
-                    @if($book->edition)
-                        <span class="px-3 py-1 bg-white/20 rounded-lg text-sm font-medium">
-                            <span class="text-white/60 text-xs">Edisi: </span>{{ $book->edition }}
-                        </span>
-                    @endif
-                    @if($book->isbn)
-                        <span class="px-3 py-1 bg-white/20 rounded-lg text-sm font-medium">
-                            <span class="text-white/60 text-xs">ISBN: </span>{{ $book->isbn }}
-                        </span>
-                    @endif
-                    @if($book->classification)
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">
-                            <span class="text-white/60 text-xs">Klasifikasi: </span>{{ $book->classification }}
-                        </span>
-                    @endif
-                    @if($book->call_number)
-                        <span class="px-3 py-1 bg-white/10 rounded-lg text-sm">
-                            <span class="text-white/60 text-xs">No. Panggil: </span>{{ $book->call_number }}
-                        </span>
-                    @endif
+
                 </div>
                 <div class="flex items-center gap-6 mt-4">
                     <div>
