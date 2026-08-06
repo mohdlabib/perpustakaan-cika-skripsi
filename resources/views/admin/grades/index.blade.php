@@ -79,7 +79,8 @@
         </table>
     </div>
     
-    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-sm text-gray-500">Menampilkan {{ $grades->firstItem() }}-{{ $grades->lastItem() }} dari {{ $grades->total() }} data</p>
         {{ $grades->withQueryString()->links() }}
     </div>
 </div>

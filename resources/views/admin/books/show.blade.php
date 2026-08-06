@@ -221,7 +221,8 @@
     </div>
 
     @if($copies->hasPages())
-    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
+    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <p class="text-sm text-gray-500">Menampilkan {{ $copies->firstItem() }}-{{ $copies->lastItem() }} dari {{ $copies->total() }} eksemplar</p>
         {{ $copies->links() }}
     </div>
     @endif
