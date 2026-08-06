@@ -162,8 +162,11 @@
                     <th class="px-6 py-3 font-semibold">Kode Eksemplar</th>
                     <th class="px-6 py-3 font-semibold">No. Inventaris</th>
                     <th class="px-6 py-3 font-semibold">Lokasi Rak</th>
+                    <th class="px-6 py-3 font-semibold">Harga</th>
+                    <th class="px-6 py-3 font-semibold">Tgl. Diterima</th>
                     <th class="px-6 py-3 font-semibold">Kondisi</th>
                     <th class="px-6 py-3 font-semibold">Status</th>
+                    <th class="px-6 py-3 font-semibold">Catatan</th>
                     <th class="px-6 py-3 font-semibold text-right">Aksi</th>
                 </tr>
             </thead>
@@ -184,6 +187,12 @@
                             <span class="text-gray-400">-</span>
                         @endif
                     </td>
+                    <td class="px-6 py-4 text-gray-700">
+                        {{ $copy->price ? 'Rp ' . number_format($copy->price, 0, ',', '.') : '-' }}
+                    </td>
+                    <td class="px-6 py-4 text-gray-600 whitespace-nowrap">
+                        {{ $copy->received_date ? $copy->received_date->format('d/m/Y') : '-' }}
+                    </td>
                     <td class="px-6 py-4">
                         @php
                             $condColors = ['baik' => 'green', 'rusak' => 'yellow', 'hilang' => 'red'];
@@ -198,6 +207,9 @@
                         <span class="px-2 py-1 bg-{{ $copy->status_color }}-100 text-{{ $copy->status_color }}-700 text-xs font-medium rounded-lg">
                             {{ $copy->status }}
                         </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500 text-sm max-w-xs truncate" title="{{ $copy->notes }}">
+                        {{ $copy->notes ? Str::limit($copy->notes, 30) : '-' }}
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex justify-end gap-2">
@@ -216,7 +228,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="px-6 py-12 text-center">
+                    <td colspan="10" class="px-6 py-12 text-center">
                         <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                         <p class="text-gray-500 font-medium">Belum ada eksemplar</p>
                         <a href="{{ route('admin.books.copies.create', $book) }}" class="text-primary-dark text-sm font-medium hover:underline mt-1 inline-block">Tambah eksemplar pertama →</a>

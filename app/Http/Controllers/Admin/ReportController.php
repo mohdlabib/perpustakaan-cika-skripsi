@@ -97,9 +97,12 @@ class ReportController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('visitor_name', 'like', "%{$search}%")
-                  ->orWhere('student_nis', 'like', "%{$search}%")
-                  ->orWhere('visitor_detail', 'like', "%{$search}%");
+                $q->where('student_nis', 'like', "%{$search}%")
+                  ->orWhere('guest_name', 'like', "%{$search}%")
+                  ->orWhere('guest_institution', 'like', "%{$search}%")
+                  ->orWhereHas('student', function($sq) use ($search) {
+                      $sq->where('name', 'like', "%{$search}%");
+                  });
             });
         }
         

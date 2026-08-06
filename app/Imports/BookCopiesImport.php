@@ -218,11 +218,11 @@ class BookCopiesImport implements ToModel, WithHeadingRow, SkipsOnError, SkipsOn
             }
         }
 
-        // Parse price
+        // Parse price — strip "Rp", spaces, dots (thousand sep), commas
         $price = null;
         if (!empty($row['harga'])) {
-            $rawPrice = str_replace([',', ' '], ['', ''], (string) $row['harga']);
-            if (is_numeric($rawPrice)) {
+            $rawPrice = preg_replace('/[^0-9]/', '', (string) $row['harga']);
+            if ($rawPrice !== '') {
                 $price = (float) $rawPrice;
             }
         }
@@ -246,12 +246,22 @@ class BookCopiesImport implements ToModel, WithHeadingRow, SkipsOnError, SkipsOn
 
         $this->imported++;
 
+        // shelf_location fallback: jika rak tidak ada di DB, simpan sebagai teks
+        $shelfLocationFallback = null;
+        if (!$shelfId && !empty($row['rak'])) {
+            $shelfLocationFallback = trim($row['rak']);
+            if (!empty($row['kolom'])) {
+                $shelfLocationFallback .= ' / ' . trim($row['kolom']);
+            }
+        }
+
         return new BookCopy([
             'book_id'        => $this->bookId,
             'copy_code'      => !empty($kode) ? $kode : null,
             'inventory_code' => !empty($row['no_inventaris']) && $row['no_inventaris'] !== '-' ? trim($row['no_inventaris']) : null,
             'shelf_id'       => $shelfId,
             'shelf_column_id'=> $shelfColumnId,
+            'shelf_location' => $shelfLocationFallback,
             'condition'      => $condition,
             'received_date'  => $receivedDate,
             'price'          => $price,

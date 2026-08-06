@@ -267,7 +267,13 @@ class BorrowingController extends Controller
 
             $msg = "Import berhasil! {$import->getImportedCount()} peminjaman ditambahkan.";
             if ($import->getSkippedCount() > 0) {
-                $msg .= " {$import->getSkippedCount()} baris di-skip.";
+                $reasons = $import->getSkipReasons();
+                $uniqueReasons = array_unique($reasons);
+                $reasonSummary = implode('; ', array_slice($uniqueReasons, 0, 3));
+                $msg .= " {$import->getSkippedCount()} baris di-skip: {$reasonSummary}";
+                if (count($uniqueReasons) > 3) {
+                    $msg .= ' (dan ' . (count($uniqueReasons) - 3) . ' alasan lainnya)';
+                }
             }
 
             // Report failures

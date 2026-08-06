@@ -46,6 +46,7 @@ class BookCopiesExport implements FromCollection, WithHeadings, WithMapping, Wit
             'Kolom',
             'Harga',
             'Kondisi',
+            'Status',
             'Tanggal Diterima',
             'Catatan',
         ];
@@ -63,6 +64,7 @@ class BookCopiesExport implements FromCollection, WithHeadings, WithMapping, Wit
             $copy->shelfColumn->name ?? '',
             $copy->price ?? '',
             $copy->condition,
+            $copy->status,
             $copy->received_date ? $copy->received_date->format('d/m/Y') : '',
             $copy->notes ?? '',
         ];
@@ -71,15 +73,16 @@ class BookCopiesExport implements FromCollection, WithHeadings, WithMapping, Wit
     public function columnWidths(): array
     {
         return [
-            'A' => 5,   // No
-            'B' => 18,  // Kode Eksemplar
-            'C' => 18,  // No. Inventaris
-            'D' => 18,  // Rak
-            'E' => 14,  // Kolom
-            'F' => 14,  // Harga
-            'G' => 12,  // Kondisi
-            'H' => 16,  // Tanggal Diterima
-            'I' => 25,  // Catatan
+            'A' => 5,  // No
+            'B' => 18, // Kode Eksemplar
+            'C' => 18, // No. Inventaris
+            'D' => 18, // Rak
+            'E' => 12, // Kolom
+            'F' => 14, // Harga
+            'G' => 12, // Kondisi
+            'H' => 14, // Status
+            'I' => 16, // Tanggal Diterima
+            'J' => 28, // Catatan
         ];
     }
 
@@ -98,7 +101,7 @@ class BookCopiesExport implements FromCollection, WithHeadings, WithMapping, Wit
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastColumn = 'I';
+                $lastColumn = 'J';
 
                 // Add title header (4 rows) — consistent with other exports
                 $sheet->insertNewRowBefore(1, 4);
@@ -183,9 +186,10 @@ class BookCopiesExport implements FromCollection, WithHeadings, WithMapping, Wit
                         }
                     }
 
-                    // Center align specific columns
+                    $sheet->getStyle("F{$dataStartRow}:F{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
+                    $sheet->getStyle("F{$dataStartRow}:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
                     $sheet->getStyle("A{$dataStartRow}:A{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("G{$dataStartRow}:H{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("G{$dataStartRow}:I{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 }
 
                 // Print setup

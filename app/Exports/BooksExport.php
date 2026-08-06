@@ -48,10 +48,12 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'ISBN',
             'Penerbit',
             'Tahun Terbit',
+            'Tempat Terbit',
             'Kategori',
             'Klasifikasi',
             'No. Panggil',
             'Edisi',
+            'Deskripsi Fisik',
             'Total Eksemplar',
             'Tersedia',
             'Dipinjam',
@@ -75,10 +77,12 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $book->isbn ?? '-',
             $book->publisher ?? '-',
             $book->publication_year ?? '-',
+            $book->publication_place ?? '-',
             $book->category->name ?? '-',
             $book->classification ?? '-',
             $book->call_number ?? '-',
             $book->edition ?? '-',
+            $book->physical_description ?? '-',
             $totalCopies,
             max(0, $available),
             $borrowed,
@@ -94,15 +98,17 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'C' => 25,  // Pengarang
             'D' => 18,  // ISBN
             'E' => 20,  // Penerbit
-            'F' => 12,  // Tahun
-            'G' => 18,  // Kategori
-            'H' => 12,  // Klasifikasi
-            'I' => 14,  // No Panggil
-            'J' => 15,  // Edisi
-            'K' => 14,  // Total
-            'L' => 12,  // Tersedia
-            'M' => 12,  // Dipinjam
-            'N' => 14,  // Rusak/Hilang
+            'F' => 12,  // Tahun Terbit
+            'G' => 18,  // Tempat Terbit
+            'H' => 18,  // Kategori
+            'I' => 12,  // Klasifikasi
+            'J' => 14,  // No Panggil
+            'K' => 15,  // Edisi
+            'L' => 25,  // Deskripsi Fisik
+            'M' => 14,  // Total Eksemplar
+            'N' => 12,  // Tersedia
+            'O' => 12,  // Dipinjam
+            'P' => 14,  // Rusak/Hilang
         ];
     }
 
@@ -122,7 +128,7 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastColumn = 'N';
+                $lastColumn = 'P';
                 
                 // Add title header (4 rows)
                 $sheet->insertNewRowBefore(1, 4);
@@ -204,23 +210,24 @@ class BooksExport implements FromCollection, WithHeadings, WithMapping, WithStyl
                     
                     // Center align number/code columns
                     $sheet->getStyle("A{$dataStartRow}:A{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("F{$dataStartRow}:F{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("H{$dataStartRow}:I{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("K{$dataStartRow}:N{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("F{$dataStartRow}:G{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("I{$dataStartRow}:J{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("M{$dataStartRow}:P{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     
                     // Highlight "Tersedia = 0" cells in red
                     for ($row = $dataStartRow; $row <= $lastRow; $row++) {
-                        $available = $sheet->getCell("L{$row}")->getValue();
+                        // Col N = Tersedia, Col P = Rusak/Hilang
+                        $available = $sheet->getCell("N{$row}")->getValue();
                         if ($available === 0 || $available === '0') {
-                            $sheet->getStyle("L{$row}")->applyFromArray([
+                            $sheet->getStyle("N{$row}")->applyFromArray([
                                 'font' => ['color' => ['rgb' => 'DC2626'], 'bold' => true],
                             ]);
                         }
                         
                         // Highlight rusak/hilang > 0
-                        $damaged = $sheet->getCell("N{$row}")->getValue();
+                        $damaged = $sheet->getCell("P{$row}")->getValue();
                         if ($damaged > 0) {
-                            $sheet->getStyle("N{$row}")->applyFromArray([
+                            $sheet->getStyle("P{$row}")->applyFromArray([
                                 'font' => ['color' => ['rgb' => 'EA580C'], 'bold' => true],
                                 'fill' => [
                                     'fillType' => Fill::FILL_SOLID,

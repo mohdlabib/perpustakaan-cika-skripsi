@@ -4,105 +4,90 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 /**
- * Template import buku.
- * Header identik dengan BooksExport (kolom yang diproses saat import).
- * Kolom statistik (Total Eksemplar, Tersedia, Dipinjam, Rusak/Hilang) di-export
- * tapi diabaikan saat import — TIDAK disertakan di template agar tidak membingungkan.
+ * Template import buku — header di baris 1, langsung bisa diimport.
+ * Kolom: Judul Buku, Pengarang, ISBN, Penerbit, Tahun Terbit, Tempat Terbit,
+ *        Kategori, Klasifikasi, No. Panggil, Edisi, Deskripsi Fisik
  */
-class BooksTemplateExport implements FromArray, WithHeadings, WithStyles, WithColumnWidths, WithEvents
+class BooksTemplateExport implements FromArray, WithHeadings, WithColumnWidths, WithEvents
 {
-    public function array(): array
+    public function headings(): array
     {
         return [
-            [
-                'Clean Code', 'Robert C. Martin', '978-0-13-235088-4',
-                'Prentice Hall', '2008', 'Teknologi', '005.13', '005.13 MAR c',
-                'Cetakan ke-1',
-            ],
-            [
-                'Pemrograman PHP', 'John Doe', '978-xxx-xxx',
-                'Penerbit ABC', '2024', 'Teknologi', '005.2', '005.2 DOE p',
-                '',
-            ],
+            'Judul Buku',
+            'Pengarang',
+            'ISBN',
+            'Penerbit',
+            'Tahun Terbit',
+            'Tempat Terbit',
+            'Kategori',
+            'Klasifikasi',
+            'No. Panggil',
+            'Edisi',
+            'Deskripsi Fisik',
         ];
     }
 
-    public function headings(): array
+    public function array(): array
     {
-        // Identik dengan BooksExport::headings() (hanya kolom yang bisa diimport)
         return [
-            'Judul Buku',   // wajib
-            'Pengarang',    // wajib
-            'ISBN',         // opsional, untuk deduplikasi
-            'Penerbit',     // opsional
-            'Tahun Terbit', // opsional
-            'Kategori',     // nama kategori (jika ada di master data)
-            'Klasifikasi',  // kode DDC / klasifikasi
-            'No. Panggil',  // call number
-            'Edisi',        // cetakan / edisi
+            ['Clean Code',        'Robert C. Martin', '978-0-13-235088-4', 'Prentice Hall',   '2008', 'New Jersey',  'Teknologi', '005.13', '005.13 MAR c', 'Cetakan ke-1', 'xiv, 431 hlm.; 24 cm'],
+            ['Pemrograman PHP',   'John Doe',         '978-xxx-xxx',       'Penerbit ABC',    '2024', 'Jakarta',     'Teknologi', '005.2',  '005.2 DOE p',  '',            ''],
+            ['Laskar Pelangi',    'Andrea Hirata',    '979-xxx-xxx',       'Bentang Pustaka', '2005', 'Yogyakarta',  'Fiksi',     '813',    '813 HIR l',    'Edisi ke-2',  'xii, 529 hlm.; 21 cm'],
         ];
     }
 
     public function columnWidths(): array
     {
         return [
-            'A' => 32, 'B' => 24, 'C' => 20,
-            'D' => 20, 'E' => 14, 'F' => 18,
-            'G' => 14, 'H' => 20, 'I' => 16,
+            'A' => 32, 'B' => 22, 'C' => 20, 'D' => 20,
+            'E' => 12, 'F' => 18, 'G' => 16, 'H' => 14,
+            'I' => 18, 'J' => 16, 'K' => 26,
         ];
     }
-
-    public function styles(Worksheet $sheet) { return []; }
 
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                $lastCol = 'I';
 
-                $sheet->insertNewRowBefore(1, 3);
-                $sheet->mergeCells("A1:{$lastCol}1");
-                $sheet->setCellValue('A1', 'TEMPLATE IMPORT DATA BUKU');
-                $sheet->mergeCells("A2:{$lastCol}2");
-                $sheet->setCellValue('A2', 'Kolom wajib: Judul Buku dan Pengarang. ISBN digunakan untuk deduplikasi (buku dengan ISBN sama akan di-update).');
-                $sheet->mergeCells("A3:{$lastCol}3");
-                $sheet->setCellValue('A3', 'Untuk menambah eksemplar, gunakan fitur Import Eksemplar di halaman detail buku.');
+                // Header row style
+                $sheet->getStyle('A1:K1')->applyFromArray([
+                    'font'      => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                    'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '6A1B9A']],
+                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
+                    'borders'   => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '4A148C']]],
+                ]);
+                $sheet->getRowDimension(1)->setRowHeight(22);
 
-                $sheet->getStyle('A1')->applyFromArray([
-                    'font'      => ['bold' => true, 'size' => 13, 'color' => ['rgb' => '1B5E20']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                ]);
-                $sheet->getStyle('A2:A3')->applyFromArray([
-                    'font'      => ['italic' => true, 'size' => 9, 'color' => ['rgb' => '555555']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                ]);
-                $headerRow = 4;
-                $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}")->applyFromArray([
-                    'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => '1B5E20']]],
-                ]);
-                $sheet->getRowDimension($headerRow)->setRowHeight(20);
+                // Data rows
                 $lastRow = $sheet->getHighestRow();
-                if ($lastRow > $headerRow) {
-                    $sheet->getStyle("A" . ($headerRow + 1) . ":{$lastCol}{$lastRow}")->applyFromArray([
+                if ($lastRow >= 2) {
+                    $sheet->getStyle("A2:K{$lastRow}")->applyFromArray([
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CCCCCC']]],
-                        'fill'    => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'FFF8E1']],
                     ]);
+                    for ($i = 2; $i <= $lastRow; $i++) {
+                        $color = ($i % 2 === 0) ? 'FAF5FF' : 'FFFFFF';
+                        $sheet->getStyle("A{$i}:K{$i}")->applyFromArray([
+                            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $color]],
+                        ]);
+                    }
                 }
-                $sheet->freezePane('A5');
+
+                // ISBN & Tahun Terbit sebagai teks
+                $sheet->getStyle('C1:C1000')->getNumberFormat()->setFormatCode('@');
+                $sheet->getStyle('E1:E1000')->getNumberFormat()->setFormatCode('@');
+
+                $sheet->freezePane('A2');
+                $event->sheet->setTitle('Data Buku');
             },
         ];
     }

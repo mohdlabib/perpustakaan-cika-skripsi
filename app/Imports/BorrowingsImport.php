@@ -24,6 +24,7 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
     protected $imported = 0;
     protected $skipped = 0;
     protected $detectedHeadingRow = 1;
+    protected $skipReasons = [];
 
     public function __construct(?string $filePath = null)
     {
@@ -162,6 +163,13 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         return $mapped;
     }
 
+    private function skip(string $reason): null
+    {
+        $this->skipped++;
+        $this->skipReasons[] = $reason;
+        return null;
+    }
+
     public function model(array $row)
     {
         $row = $this->normalizeRow($row);
@@ -177,14 +185,12 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
 
         if (empty($nis)) {
-            $this->skipped++;
-            return null;
+            return $this->skip('NIS kosong dan nama peminjam tidak ditemukan');
         }
 
         // Skip obvious summary rows
         if (str_contains($nis, ':') || str_contains(strtolower($nis), 'total') || str_contains(strtolower($nis), 'ringkasan')) {
-            $this->skipped++;
-            return null;
+            return $this->skip('Baris ringkasan/summary dilewati');
         }
 
         $bookCode = trim((string) ($row['kode_eksemplar'] ?? ''));
@@ -196,8 +202,7 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
 
         if (!$student) {
-            $this->skipped++;
-            return null;
+            return $this->skip("NIS '{$nis}' tidak ditemukan di database siswa");
         }
 
         // Find book copy then book
@@ -216,8 +221,8 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
         }
 
         if (!$book) {
-            $this->skipped++;
-            return null;
+            $judul = trim((string) ($row['judul_buku'] ?? ''));
+            return $this->skip("Buku '" . ($judul ?: $bookCode ?: '?') . "' tidak ditemukan di database");
         }
 
         // Parse dates
@@ -256,8 +261,7 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
                 ->exists();
 
             if ($exists) {
-                $this->skipped++;
-                return null;
+                return $this->skip("Duplikat: {$student->name} meminjam '{$book->title}' pada {$borrowDateStr}");
             }
         }
 
@@ -334,4 +338,5 @@ class BorrowingsImport implements ToModel, WithHeadingRow, WithValidation, Skips
 
     public function getImportedCount(): int { return $this->imported; }
     public function getSkippedCount(): int { return $this->skipped; }
+    public function getSkipReasons(): array { return $this->skipReasons; }
 }

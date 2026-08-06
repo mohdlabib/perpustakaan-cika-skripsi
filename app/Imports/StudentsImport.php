@@ -158,18 +158,18 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     }
 
     /**
-     * Detect if this row is a summary/footer row from the export.
+     * Check if a row is a summary/footer row from the export.
      * Export appends "RINGKASAN:" and summary data after the last data row.
      */
     private function isSummaryRow(string $nis, string $nama): bool
     {
-        // Skip rows where NIS contains non-alphanumeric (like "RINGKASAN:", "Total...")
+        // Skip rows where NIS or nama contains colon (summary format like "RINGKASAN:" or "Total:")
         if (str_contains($nis, ':') || str_contains($nama, ':')) {
             return true;
         }
 
         // Skip rows starting with known summary keywords
-        $summaryKeywords = ['ringkasan', 'total siswa', 'siswa aktif', 'total semua', 'peminjaman terlambat'];
+        $summaryKeywords = ['ringkasan', 'total siswa', 'siswa aktif', 'total semua', 'peminjaman terlambat', 'tanggal export'];
         $nisLower = strtolower($nis);
         $namaLower = strtolower($nama);
         foreach ($summaryKeywords as $kw) {
@@ -178,11 +178,8 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
             }
         }
 
-        // If NIS is clearly not a valid student ID (contains letters AND it's not alphanumeric like "XII IPA 1")
-        // We check: valid NIS is purely numeric or alphanumeric without spaces
-        if (!empty($nis) && preg_match('/\s/', $nis)) {
-            return true;
-        }
+        // NOTE: Removed the space-rejection logic — many valid NIS values contain spaces
+        // Only reject based on summary keywords above
 
         return false;
     }

@@ -108,7 +108,6 @@ class Book extends Model
             return null;
         }
         
-        // Always use /storage/app/public/ path for hosting compatibility
-        return url('/storage/app/public/' . $this->cover_image);
+        return \Illuminate\Support\Facades\Storage::url($this->cover_image);
     }
 }

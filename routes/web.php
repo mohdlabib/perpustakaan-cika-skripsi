@@ -125,10 +125,11 @@ Route::prefix('admin')->middleware(['auth'])->name('admin.')->group(function () 
     Route::get('/borrowings/template/download', [AdminBorrowingController::class, 'downloadTemplate'])->name('borrowings.template');
     
     // Master Data
-    Route::resource('students', StudentController::class);
+    // NOTE: custom routes MUST be before resource() to avoid {student} wildcard swallowing them
     Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
     Route::get('/students/export/download', [StudentController::class, 'export'])->name('students.export');
     Route::get('/students/template/download', [StudentController::class, 'downloadTemplate'])->name('students.template');
+    Route::resource('students', StudentController::class);
     Route::resource('grades', GradeController::class);
     Route::resource('shelves', ShelfController::class);
     Route::get('/shelves/{shelf}/columns', [ShelfController::class, 'getColumns'])->name('shelves.columns');
