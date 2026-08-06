@@ -86,7 +86,7 @@ class ReportController extends Controller
         // Date range filter
         $startDate = $request->filled('start_date') 
             ? Carbon::parse($request->start_date)->startOfDay() 
-            : now()->startOfMonth();
+            : now()->subYear()->startOfDay();
         $endDate = $request->filled('end_date') 
             ? Carbon::parse($request->end_date)->endOfDay() 
             : now()->endOfDay();

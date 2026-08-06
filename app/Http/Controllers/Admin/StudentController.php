@@ -120,8 +120,12 @@ class StudentController extends Controller
 
         try {
             $file = $request->file('file');
-            $import = new \App\Imports\StudentsImport($file->getRealPath());
-            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+            // Store file to disk first so getRealPath() is stable for heading detection
+            $storedPath = $file->store('imports/students', 'local');
+            $fullPath = storage_path('app/' . $storedPath);
+
+            $import = new \App\Imports\StudentsImport($fullPath);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $fullPath, 'local');
 
             $msg = "Import berhasil! {$import->getImportedCount()} siswa baru ditambahkan.";
             if ($import->getUpdatedCount() > 0) {
@@ -145,8 +149,15 @@ class StudentController extends Controller
                     ->with('error', 'Tidak ada siswa yang berhasil di-import. Pastikan file menggunakan header yang benar (NIS, Nama, Kelas, dll). Download template untuk referensi.');
             }
 
+            // Cleanup stored file
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+
             return redirect()->route('admin.students.index')->with('success', $msg);
         } catch (\Exception $e) {
+            // Cleanup stored file on error
+            if (isset($storedPath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+            }
             return redirect()->route('admin.students.index')
                 ->with('error', 'Gagal import: ' . $e->getMessage());
         }
