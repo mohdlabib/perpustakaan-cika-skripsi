@@ -236,16 +236,26 @@ class ReportController extends Controller
 
         try {
             $file = $request->file('file');
-            $import = new \App\Imports\VisitsImport($file->getRealPath());
-            \Maatwebsite\Excel\Facades\Excel::import($import, $file);
+            // Store to disk first so getRealPath() is stable for heading detection
+            $storedPath = $file->store('imports/visitors', 'local');
+            $fullPath = storage_path('app/' . $storedPath);
+
+            $import = new \App\Imports\VisitsImport($fullPath);
+            \Maatwebsite\Excel\Facades\Excel::import($import, $storedPath, 'local');
 
             $msg = "Import berhasil! {$import->getImportedCount()} kunjungan ditambahkan.";
             if ($import->getSkippedCount() > 0) {
                 $msg .= " {$import->getSkippedCount()} baris di-skip.";
             }
 
+            // Cleanup stored file
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+
             return redirect()->route('admin.reports.visitors')->with('success', $msg);
         } catch (\Exception $e) {
+            if (isset($storedPath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+            }
             return redirect()->route('admin.reports.visitors')
                 ->with('error', 'Gagal import: ' . $e->getMessage());
         }
