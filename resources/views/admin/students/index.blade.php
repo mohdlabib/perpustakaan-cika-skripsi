@@ -197,7 +197,7 @@
     </div>
     
     <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p class="text-sm text-gray-500">Menampilkan {{ $students->firstItem() }}-{{ $students->lastItem() }} dari {{ $students->total() }} data</p>
+        <p class="text-sm text-gray-500 mr-4">Menampilkan {{ $students->firstItem() }}-{{ $students->lastItem() }} dari {{ $students->total() }} data</p>
         {{ $students->withQueryString()->links() }}
     </div>
 </div>
