@@ -57,6 +57,16 @@
             
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Kelas
+                </label>
+                <input type="text" name="class" value="{{ old('class', $student->class ?? '') }}"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
+                    placeholder="Contoh: XII IPA 1">
+                @error('class')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                     Angkatan <span class="text-red-500">*</span>
                 </label>
                 <select name="grade_id" required class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition cursor-pointer">
@@ -89,7 +99,7 @@
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-dark focus:border-transparent transition"
                     placeholder="Minimal 6 karakter">
                 @error('password')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
-                <p class="text-green-700 text-xs mt-2">Password diperlukan jika siswa ingin login ke sistem</p>
+                <p class="text-green-700 text-xs mt-2">💡 Password default saat import Excel = NIS siswa. Kosongkan field ini jika tidak ingin mengubah password.</p>
             </div>
             
             <div class="flex gap-4 pt-4 border-t border-gray-100">
