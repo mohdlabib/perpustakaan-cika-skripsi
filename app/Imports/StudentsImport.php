@@ -252,8 +252,8 @@ class StudentsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOn
     public function rules(): array
     {
         return [
-            '*.nis'  => 'nullable|string|max:20',
-            '*.nama' => 'nullable|string|max:255',
+            '*.nis'  => 'nullable|max:20',
+            '*.nama' => 'nullable|max:255',
         ];
     }
 

@@ -13,26 +13,26 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 /**
  * Template import kunjungan — header di baris 1, langsung bisa diimport.
- * Kolom: Tanggal, Jam, Tipe, NIS, Nama Pengunjung, Kelas / Instansi, Tujuan
+ * Kolom: Tanggal, Jam, Tipe, NIS, Nama Pengunjung, Kelas / Instansi, Angkatan, Tujuan
  */
 class VisitorsTemplateExport implements FromArray, WithHeadings, WithColumnWidths, WithEvents
 {
     public function headings(): array
     {
-        return ['Tanggal', 'Jam', 'Tipe', 'NIS', 'Nama Pengunjung', 'Kelas / Instansi', 'Tujuan'];
+        return ['Tanggal', 'Jam', 'Tipe', 'NIS', 'Nama Pengunjung', 'Kelas / Instansi', 'Angkatan', 'Tujuan'];
     }
 
     public function array(): array
     {
         return [
-            ['04/08/2026', '08:30', 'Siswa', '12345', 'Ahmad Budi',    'XII IPA 1',          'Membaca buku'],
-            ['04/08/2026', '09:15', 'Tamu',  '',      'Siti Nurbaya',  'Universitas Riau',   'Referensi penelitian'],
+            ['04/08/2026', '08:30', 'Siswa', '12345', 'Ahmad Budi',   'XII IPA 1',        'XII',  'Membaca buku'],
+            ['04/08/2026', '09:15', 'Tamu',  '',      'Siti Nurbaya', 'Universitas Riau', '-',    'Referensi penelitian'],
         ];
     }
 
     public function columnWidths(): array
     {
-        return ['A' => 14, 'B' => 8, 'C' => 10, 'D' => 14, 'E' => 28, 'F' => 22, 'G' => 26];
+        return ['A' => 14, 'B' => 8, 'C' => 10, 'D' => 14, 'E' => 28, 'F' => 22, 'G' => 12, 'H' => 26];
     }
 
     public function registerEvents(): array
@@ -42,7 +42,7 @@ class VisitorsTemplateExport implements FromArray, WithHeadings, WithColumnWidth
                 $sheet = $event->sheet->getDelegate();
 
                 // Header row style
-                $sheet->getStyle('A1:G1')->applyFromArray([
+                $sheet->getStyle('A1:H1')->applyFromArray([
                     'font'      => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
                     'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -50,21 +50,23 @@ class VisitorsTemplateExport implements FromArray, WithHeadings, WithColumnWidth
                 ]);
                 $sheet->getRowDimension(1)->setRowHeight(22);
 
-                // Data rows
+                // Data rows style
                 $lastRow = $sheet->getHighestRow();
                 if ($lastRow > 1) {
-                    $sheet->getStyle("A2:G{$lastRow}")->applyFromArray([
+                    $sheet->getStyle("A2:H{$lastRow}")->applyFromArray([
+                        'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                         'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['rgb' => 'CCCCCC']]],
                     ]);
+                    // Alternating row colors
                     for ($i = 2; $i <= $lastRow; $i++) {
-                        $color = ($i % 2 === 0) ? 'F5FFF5' : 'FFFFFF';
-                        $sheet->getStyle("A{$i}:G{$i}")->applyFromArray([
+                        $color = ($i % 2 === 0) ? 'E8F5E9' : 'FFFFFF';
+                        $sheet->getStyle("A{$i}:H{$i}")->applyFromArray([
                             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => $color]],
                         ]);
                     }
                 }
 
-                // Kolom NIS sebagai teks
+                // Format kolom NIS sebagai teks agar leading zero tidak hilang
                 $sheet->getStyle('D1:D1000')->getNumberFormat()->setFormatCode('@');
                 // Kolom Tanggal sebagai teks (agar tidak auto-convert)
                 $sheet->getStyle('A1:A1000')->getNumberFormat()->setFormatCode('@');

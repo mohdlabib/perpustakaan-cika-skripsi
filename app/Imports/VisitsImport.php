@@ -242,6 +242,7 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
                 return new Visit([
                     'visitor_type' => 'student',
                     'student_nis'  => $student->nis,
+                    'guest_purpose'=> !empty($row['tujuan']) && $row['tujuan'] !== '-' ? trim((string)$row['tujuan']) : null,
                     'visited_at'   => $visitedAt,
                 ]);
             }
