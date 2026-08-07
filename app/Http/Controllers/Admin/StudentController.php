@@ -125,7 +125,7 @@ class StudentController extends Controller
             $fullPath = storage_path('app/' . $storedPath);
 
             $import = new \App\Imports\StudentsImport($fullPath);
-            \Maatwebsite\Excel\Facades\Excel::import($import, $fullPath, 'local');
+            \Maatwebsite\Excel\Facades\Excel::import($import, $storedPath, 'local');
 
             $msg = "Import berhasil! {$import->getImportedCount()} siswa baru ditambahkan.";
             if ($import->getUpdatedCount() > 0) {
