@@ -129,16 +129,25 @@ class BookCopyController extends Controller
 
         try {
             $file   = $request->file('file');
-            $import = new BookCopiesImport($book->id, $file->getRealPath());
-            Excel::import($import, $file);
+            // Store to disk first so getRealPath() is stable for heading detection
+            $storedPath = $file->store('imports/book-copies', 'local');
+            $fullPath   = storage_path('app/' . $storedPath);
+
+            $import = new BookCopiesImport($book->id, $fullPath);
+            Excel::import($import, $storedPath, 'local');
 
             $msg = "Import eksemplar berhasil! {$import->getImportedCount()} eksemplar ditambahkan.";
             if ($import->getSkippedCount() > 0) {
                 $msg .= " {$import->getSkippedCount()} baris di-skip (duplikat atau data tidak valid).";
             }
 
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+
             return redirect()->route('admin.books.show', $book)->with('success', $msg);
         } catch (\Exception $e) {
+            if (isset($storedPath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+            }
             return redirect()->route('admin.books.show', $book)
                 ->with('error', 'Gagal import: ' . $e->getMessage());
         }

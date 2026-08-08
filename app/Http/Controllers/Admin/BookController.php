@@ -232,8 +232,12 @@ class BookController extends Controller
 
         try {
             $file = $request->file('file');
-            $import = new \App\Imports\BooksImport($file->getRealPath());
-            Excel::import($import, $file);
+            // Store to disk first so getRealPath() is stable for heading detection
+            $storedPath = $file->store('imports/books', 'local');
+            $fullPath = storage_path('app/' . $storedPath);
+
+            $import = new \App\Imports\BooksImport($fullPath);
+            Excel::import($import, $storedPath, 'local');
 
             $msg = "Import berhasil! {$import->getImportedCount()} buku baru ditambahkan.";
             if ($import->getUpdatedCount() > 0) {
@@ -251,6 +255,9 @@ class BookController extends Controller
                 $msg .= " {$failCount} baris gagal validasi (contoh: {$firstError}).";
             }
 
+            // Cleanup stored file
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+
             // If nothing was imported, show a warning
             if ($import->getImportedCount() === 0 && $import->getUpdatedCount() === 0) {
                 return redirect()->route('admin.books.index')
@@ -259,6 +266,9 @@ class BookController extends Controller
 
             return redirect()->route('admin.books.index')->with('success', $msg);
         } catch (\Exception $e) {
+            if (isset($storedPath)) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($storedPath);
+            }
             return redirect()->route('admin.books.index')
                 ->with('error', 'Gagal import: ' . $e->getMessage());
         }
