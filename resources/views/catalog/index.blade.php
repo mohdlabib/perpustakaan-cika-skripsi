@@ -20,8 +20,8 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-gray-800">{{ $books->total() }}</div>
-                    <div class="text-gray-500 text-sm">Total Buku</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $totalBooks }}</div>
+                    <div class="text-gray-500 text-sm">Total Judul Buku</div>
                 </div>
             </div>
         </div>
@@ -33,8 +33,8 @@
                     </svg>
                 </div>
                 <div>
-                    <div class="text-2xl font-bold text-gray-800">{{ \App\Models\Book::available()->count() }}</div>
-                    <div class="text-gray-500 text-sm">Tersedia</div>
+                    <div class="text-2xl font-bold text-gray-800">{{ $totalCopies }}</div>
+                    <div class="text-gray-500 text-sm">Total Eksemplar</div>
                 </div>
             </div>
         </div>
@@ -194,7 +194,7 @@
     
     @if($books->hasPages())
     <div class="mt-8">
-        {{ $books->withQueryString()->links() }}
+        {{ $books->withQueryString()->onEachSide(1)->links() }}
     </div>
     @endif
 </div>

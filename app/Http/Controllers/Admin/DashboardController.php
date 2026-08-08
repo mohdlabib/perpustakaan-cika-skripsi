@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Borrowing;
 use App\Models\Student;
 use App\Models\Visit;
@@ -23,7 +24,7 @@ class DashboardController extends Controller
             'active_borrowings' => Borrowing::active()->count(),
             'today_visits' => Visit::today()->count(),
             'overdue_borrowings' => Borrowing::overdue()->count(),
-            'available_books' => Book::available()->count(),
+            'available_books' => BookCopy::count(),
         ];
 
         // Top 3 Most Borrowed Books

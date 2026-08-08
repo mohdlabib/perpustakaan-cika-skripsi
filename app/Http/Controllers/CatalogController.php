@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\BookCopy;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -38,7 +39,10 @@ class CatalogController extends Controller
         $books = $query->paginate(12);
         $categories = Category::withCount('books')->get();
 
-        return view('catalog.index', compact('books', 'categories'));
+        $totalBooks = Book::count();
+        $totalCopies = BookCopy::count();
+
+        return view('catalog.index', compact('books', 'categories', 'totalBooks', 'totalCopies'));
     }
 
     /**

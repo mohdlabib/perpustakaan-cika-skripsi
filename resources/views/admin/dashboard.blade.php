@@ -7,7 +7,7 @@
 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
     <div class="bg-white rounded-2xl p-5 border border-gray-100">
         <div class="text-3xl font-bold text-primary-dark">{{ $stats['total_books'] }}</div>
-        <div class="text-gray-500 text-sm mt-1">Total Buku</div>
+        <div class="text-gray-500 text-sm mt-1">Total Judul Buku</div>
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100">
         <div class="text-3xl font-bold text-blue-600">{{ $stats['total_students'] }}</div>
@@ -27,7 +27,7 @@
     </div>
     <div class="bg-white rounded-2xl p-5 border border-gray-100">
         <div class="text-3xl font-bold text-green-600">{{ $stats['available_books'] }}</div>
-        <div class="text-gray-500 text-sm mt-1">Buku Tersedia</div>
+        <div class="text-gray-500 text-sm mt-1">Total Eksemplar</div>
     </div>
 </div>
 
