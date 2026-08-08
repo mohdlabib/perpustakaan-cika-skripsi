@@ -95,7 +95,9 @@ class BookCopiesImport implements ToModel, WithHeadingRow, SkipsOnError, SkipsOn
 
     protected function isHeaderRow(string $rowText): bool
     {
-        $knownHeaders = ['kode', 'eksemplar', 'inventaris', 'kondisi', 'harga', 'rak'];
+        // Require at least 3 known header keywords to avoid false-positives
+        // from title rows that may contain words like "kode" or "rak"
+        $knownHeaders = ['kode', 'eksemplar', 'inventaris', 'kondisi', 'harga', 'rak', 'kolom', 'tanggal'];
         $matchCount = 0;
 
         foreach ($knownHeaders as $header) {
@@ -104,7 +106,7 @@ class BookCopiesImport implements ToModel, WithHeadingRow, SkipsOnError, SkipsOn
             }
         }
 
-        return $matchCount >= 2;
+        return $matchCount >= 3;
     }
 
     public function headingRow(): int

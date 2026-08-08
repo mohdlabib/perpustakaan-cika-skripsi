@@ -122,7 +122,7 @@ class StudentController extends Controller
             $file = $request->file('file');
             // Store file to disk first so getRealPath() is stable for heading detection
             $storedPath = $file->store('imports/students', 'local');
-            $fullPath = storage_path('app/' . $storedPath);
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('local')->path($storedPath);
 
             $import = new \App\Imports\StudentsImport($fullPath);
             \Maatwebsite\Excel\Facades\Excel::import($import, $storedPath, 'local');

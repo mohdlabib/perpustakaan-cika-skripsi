@@ -238,7 +238,7 @@ class ReportController extends Controller
             $file = $request->file('file');
             // Store to disk first so getRealPath() is stable for heading detection
             $storedPath = $file->store('imports/visitors', 'local');
-            $fullPath = storage_path('app/' . $storedPath);
+            $fullPath = \Illuminate\Support\Facades\Storage::disk('local')->path($storedPath);
 
             $import = new \App\Imports\VisitsImport($fullPath);
             \Maatwebsite\Excel\Facades\Excel::import($import, $storedPath, 'local');

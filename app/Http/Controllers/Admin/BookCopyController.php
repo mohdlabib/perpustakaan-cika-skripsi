@@ -131,7 +131,7 @@ class BookCopyController extends Controller
             $file   = $request->file('file');
             // Store to disk first so getRealPath() is stable for heading detection
             $storedPath = $file->store('imports/book-copies', 'local');
-            $fullPath   = storage_path('app/' . $storedPath);
+            $fullPath   = \Illuminate\Support\Facades\Storage::disk('local')->path($storedPath);
 
             $import = new BookCopiesImport($book->id, $fullPath);
             Excel::import($import, $storedPath, 'local');
