@@ -231,11 +231,11 @@ class BooksImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             return null;
         }
 
-        // Find or create category
-        $category = null;
-        if (!empty($row['kategori']) && trim((string) $row['kategori']) !== '-') {
-            $category = Category::firstOrCreate(['name' => trim((string) $row['kategori'])]);
-        }
+        // Find or create category; fallback to "Umum" so category_id is never null
+        $categoryName = (!empty($row['kategori']) && trim((string) $row['kategori']) !== '-')
+            ? trim((string) $row['kategori'])
+            : 'Umum';
+        $category = Category::firstOrCreate(['name' => $categoryName]);
 
         // Check for existing book by ISBN or title + author combo
         $existingBook = null;
