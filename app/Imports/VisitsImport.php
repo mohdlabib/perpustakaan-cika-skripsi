@@ -246,9 +246,16 @@ class VisitsImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnEr
                     'visited_at'   => $visitedAt,
                 ]);
             }
-            // NIS given but student not found in DB — treat as guest or skip based on requirement
-            // Requirement says fallback to guest:
-            $isGuest = true;
+            // NIS given but student not found in DB — still record as student visit
+            // using the NIS from the file so NIS/Angkatan columns are not lost
+            $visitedAt = $this->combineDateAndTime($visitDate, $row['jam'] ?? null);
+            $this->imported++;
+            return new Visit([
+                'visitor_type' => 'student',
+                'student_nis'  => $nis,
+                'guest_purpose'=> !empty($row['tujuan']) && $row['tujuan'] !== '-' ? trim((string)$row['tujuan']) : null,
+                'visited_at'   => $visitedAt,
+            ]);
         }
 
         // Guest visit
